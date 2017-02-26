@@ -1,0 +1,337 @@
+0) DRM for SysML model
+
+1) Extracting information from the model
+MBSE Plugin, GetPower, GetCost, etc.
+
+2)UML vs SysML, discussion at the ESO/MBSE Workshop
+I was left with a bitter 'nachgeschmack'  with the way the discussion on "SysML vs UML" for software architecture developed.
+My impression is that most people in the audience didn't understand what the key issues were, nor what the conclusion of the discussion was (if any).
+
+I think that, ideally, some form of simplified documentation should be made available to identify pros and cons of both approaches, after having listed a few basic facts, and stressing the 'operational implications' (i.e. in procedures and tools) of each approach.
+
+Maybe there's already something from INCOSE/MBSE I don't know of.
+Otherwise, do you think we could sit together and write down something?
+Would it make sense?
+
+
+- the requirements: allocating behavior to structure, when the structure is software
+- the myth: software different from any other discipline? really?
+- common intersection UML/SysML
+- how to represent abstract software packages in UML 2.0
+- would usage of stereotypes be helpful in any way?
+- listing drawbacks of two different models
+- listing workarounds to such drawbacks 
+
+3) Summary of today's APE model inspection with APE team
+- List of stereotypes coming from SEProfile should contain an
+explanation of the stereotypes and how they are going to be used, or not
+used.
+- DSL could be used to enhance the language the defined stereotypes (to
+explicitly allow or forbid connectors across different types of
+interfaces for instance)
+- the introductory text page for the model should clarify which
+'aspects' are covered by a model (for instance the APE reference model
+currently does not cover in much detail operational aspects, at least
+variants are not used everywhere where they could potentially be).
+- Each value property should have a rationale with the source of the
+information
+- should variants be added to the getTemplate plugin? (maybe not since
+not always needed/sensible)
+- "Modelling the underlying physical properties which must be translated into assemply instructions" (the great Bard)
+- a model should list calibration tools/parts drawn from a catalogue, and their value properties should appear in parametrics diagrams. Missing this may be an indication that (at least for some disciplines) not sufficient attention has been given to assembly and integration matters.
+
+
+
+
+Control Model    BABAK   Matlab
+Optical Model    GONTE     Zemax
+Mechanical Model FRANK   Solid Works
+Electronic Model BRAST   ????? 
+
+STEP Integration
+http://en.wikipedia.org/wiki/ISO_10303
+
+4) Style and Layout
+Sandy: "Iconic representation"
+
+5) Telescope Error budget
+Use LNO's example and implement it properly in APE
+
+6) Telescope performance analysis
+Use HBO's traditional analysis of EELT with MATLAB and make an example with SysML parametrics
+
+7) Outer layer
+The outer layer is different from all the others because it contains
+a context. You do not need a context in element below because they are
+implicitly modeled by the product hierarchy ("the context is the
+anchor of the product hierarchy"), i.e. the internal structure of the
+block at level N (represented by one or more IBDs), gives the context of the parts at level N+1 
+
+8) ESO MBSE workshop
+Motivation
+----------
+Increasing system complexity
+State the system problem comprehensively
+Ensure that all requirements for a system are satisfied
+Develop a model on the basis of which, a real system can be built, developed or deployed
+Improve the decision process, Investigate system alternatives
+Improve Integration and launching of systems
+Cope with the mutual influence of engineering domains
+Integrate predictive modelling with descriptive modelling
+
+What we need to do
+----------
+Facilitate communication
+Reduce and control uncertainty, maintain system integrity
+Support the process of scoping, aggregation, partitioning, integration, certification, and performance prediction 
+Consistent integration of a multiplicity of system aspects
+Reduce ambiguities
+Support system maintenance
+
+Overview diagrams
+----------
+Content diagrams, which shows all different aspects captured by the model to describe the system
+System Structure View is used to decompose the system and provide the recursive modelling pattern within the subsystem package
+For every system decomposition element a package exists together with an overview diagram showing the view packages of the respective element
+
+Context 
+----------
+Defines the system boundaries and is modeled using SysML internal block diagrams.
+Ports model interfaces of a block. SysML provides standard port for service-like interfaces and flow ports for physical interfaces
+Standard ports to model abstract interfaces
+Flow ports for a combination of mechanical and flow interface at block level
+
+
+System Structure 
+----------
+SysML Block Definition Diagrams (BDDs) to model the product tree and SysML Internal Block Diagrams (IBDs) to model the structure and interfaces .
+Hierarchical breakdown is based on the product tree
+
+View
+----------
+Multiple views showing electrical, optical, and mechanical elements that are interconnected and therefore multiple structures exist. The same components can be connected in different views in different ways.
+IBDs show the electrical, optical and mechanical layout of the system and its components at different levels
+
+Allocation
+----------
+Associates elements in abstract, preliminary, and sometimes tentative ways
+Prelude to more rigorous relationships
+Can be established between any two named model elements.
+<<allocate>>
+
+Activity to Block
+Action to Part
+Object Flow to Connector
+Object Flow to Item Property
+Action Pin to Item Property
+Activity Parameter to Port
+Part to Part (e.g. SW to HW)
+Block to Block
+Port to Port (e.g. information to electrical)
+Connector to Connector/Part
+Item Property to Item Property
+SysML Block to UML Package
+
+Variant modeling
+----------
+Support product lines with varying applications and environments
+Variants have some components in common and some components that may be unique for each variant
+Evaluate whether the change to a component affects the next higher assembly in terms of its form, fit, or function
+
+
+Parametrics
+----------
+Perform different types of engineering analyses
+Trade-off studies, sensitivity analysis, design optimization
+Create systems of equations to capture constraints on the properties of blocks
+Constraints express non-causal relationships between properties
+Parameters of the equations are bound to the properties
+<<constraint>> block is used to construct parametric models
+Parameters of the equations are bound to the properties
+Parameters do NOT have a direction (in, out)
+Dependencies between parameters is based on the semantics of the language chosen
+Parameters can be marked as derived to indicate a dependency
+
+Represent System Constraints
+----------
+Generic mechanism for expressing constraints
+No built-in language
+Constraints can be owned by any element that is a namespace (e.g. block, package)
+Compose complex constraint blocks from existing constraint blocks
+
+Binding to Block properties
+----------
+Constraining Value Properties
+Composition relation between Block and Constraint block
+Capture Values in Block Configuration
+Constraining Time-Dependent Properties
+Constrain Item Flows
+
+Describing an Analysis Context
+----------
+Constraint not part of the block being analyzed
+Constraints can be modified without modifying the block
+Constraints may vary on different analysis models
+Create an analysis context
+
+Trade Studies
+----------
+Compare alternative solutions
+Characterization by a set of measures of effectiveness - <<moe>>
+Evaluated using an objective function (cost function or utility function)
+
+Requirements
+----------
+A requirement specifies a capability or condition that must (or should) be satisfied, that a system must perform, or a performance condition a system must achieve.
+SysML provides modeling capability to bridge text based requirements and system model
+Use cases typically capture functional requirements
+
+Range of other requirements (non-functional)
+Physical (weight, size, vibration)
+Performance
+Interface
+Design constraint
+
+Definition of relationship among requirements and other model elements
+Derive Requirement, Containment, Copy
+Refine
+Verify
+Satisfy
+Trace
+
+SysML requirements are not a replacement of RM tools but a visualization aid for architectural important requirements. 
+
+
+9) variant modeling
+inherited connectors of specialized blocks are indistinguishable from the variant specific connectors in the diagram.
+It's not easy to see what is the variant and what the baseline. It's also easy to
+confuse the baseline and the variant.
+-> the MBSE plugin should create a shortcut that calls a macro and walks through the model to find all inherited connectors of a part in an IBD.
+Then they can be marked with a different color.
+
+It's also impossible to indicate which connectors disappear in the variant => a variant shall not remove elements.
+-> update diagrams in cookbook: ObservatoryConext_Electrical, ControlSystem_Telescope_Electrical
+
+The instrument configuration of the telescope is an configuration variant. e.g. the intallation of APE and parts
+of the control system (e.g. xap1, xap2) on the Nasmyth platform are a configuration. The <<allocation>> is part of this variant.
+Therefore we need a variant of the ut3:UnitTelescope with this particular configuration.
+-> create in model and update ObservatoryConext_Electrical
+
+There is another variant when APE was integrated in the integration hall. some items which are later on the NA platform
+are then in the integration hall.
+
+10) FTA profile
+examples for FTA, FMCEA, etc.
+
+11) metrics
+disinguish:
+quality of the model itself
+quality of the model wrt system using <<moe>>
+
+12) how to model the steps of system integration, including the tools, etc. you need during intgration.
+Sequence diagrams are perfectly suited to specify integration test scenarios, because a sequence diagram specifies the interaction between the blocks to integrate. Therefore it acts like a script for the tester how and when he must stimulate the block via an item flow and check if the systems reacts with the expected (specified) item flow.
+
+
+13) graphical vs. textual modeling
+graphical is good for nested structures, hierarchies, topologies, flows, parallelism.
+The closer it is to implementation, the worse is graphical, the better is text.
+The abstraction level might be a criteria to choose between them.
+algorithmic details are better in text.
+
+14) OWL
+representing a state chart in OWL helps to check if you can reach S1 from S2 for example.
+
+15) Define organizing principle
+* how to use it
+* who uses it
+* why do they use it
+* how should they collaborate
+* levels of abstraction and how they are connected
+
+16)
+* Define procedures/recipes: how you create the artifact, tool issues
+* Define guidelines on how analysis context integrates with other tools, like math engines
+* describe flow down of top-level <<moe>> or fig of merit
+* Describe Methods, which artifacts they create, and concentrate on ONE artifact: purpose, traps
+* provide examples on top-level parametrics and behavior and how they flow down
+
+17) Combining Constraints and Activities
+
+*	Model relationships of behavioral properties and structural properties
+   *	Use input and output of an activity/action in parametrics 
+   *	Use properties of activities in parametrics 
+*	Model timing constraints between input of one action and output of another (UML DurationObservationAction, DurationTimeConstraint )
+   *	Show critical path; visualize duration as in MS Project
+System properties might impact the timing constraint
+
+18) How does <<allocate>> fit into MBSE process?
+*	SysML semantics and Process are not independent
+*	Handle different levels of abstraction (functional and structural) and usage
+   *	Different levels make allocation more difficult 
+   *	Different persons work on the same model
+*	Define rules for usage of allocation which fit with the process; configure tool to check those rules.
+*	Define semantics of allocation (e.g. action to part, abstract part to concrete block)
+*	Establish guidelines when to use e.g. action to part or activity to block
+*	MBSE processes existed before SysML and need to take into account its evolution
+
+19) What is the physical model ?
+*	What is goal of the physical model:
+   *	Bill of Material (BoM) where e.g. abstract parts are composed of concrete parts  
+   *	Structure of (abstract) physical parts which become a BoM, using a
+      *	Set of variants (baseline is abstract and abstract types are specialized) or
+      *	Set of allocations (allocate abstract types to concrete parts)
+*	Manage different levels of details depending on engineering discipline.
+   *	Software and electrical interfaces/parts can be modeled with a lot of detail
+   *	Optical and mechanical interfaces/parts remain quite abstract (mass, size)
+*	How to model physical location? 
+e.g. cable between Part a and Part b must be 250m long -> impact on latency -> constrain with parametrics 
+   *	CAD model provides information on distance, requirement defines required latency, constraints model their relation to model the required network topology and technology
+
+20)
+1.	An association block is a specific association between two types. It can NOT be reused. Cables modeled with association blocks cannot be reused. Maybe different association blocks can inherit from the same block to have re-use? 
+2.	Instance specific values 
+3.	variant modeling 
+4.	navigation through views 
+5.	How/Should do I show which wavelengths are populated during production? Multiplicity is used here because otherwise we have to use 8 different parts in the flux analysis.
+6.	The ipaddress depends on the context. But I cannot define a different default value for ControlSystem_Lab because zeusLCS is inherited and then there is only a default value for the base class, i.e. ControlSystem.
+
+7.	Make an example of a feature which is defined at high level and does not need a design or analysis to propagate down the system, e.g. the covers shall be painted in anodized black.
+8.	Provide an example of combining activities and parametrics. E.g. The sum of time needed for mechanical movements of the ZEUS phase mask, ndf, and cfw. The required closed loop bandwidth WFS and ASM, time between two images of a colorset. How to model a time constraint between the input of one action and the output of another action?
+9.	Provide an example of Pin/Parameter to Port allocation
+10.	Management of different levels of detail is hard (simple connector vs. fully develop port model)
+11.	Allocation (e.g. behavior to structure) requires consistent  levels of abstraction (which is practically not the case, in particular if different persons work on the same model).
+12.	How does <<allocate> fit into MBSE processes
+13.	Keeping model consistent is very hard because users have different level of know-how and levels of practice. Permanent  quality control and refactoring is needed.
+14.	Configuration control issues 
+e.g. ensure consistent models across different versions of SysML and tool upgrades
+15.	Documenting the model without cluttering the diagrams
+16.	Finding the right information! -> organization. Problem: Users are not consistent.
+17.	Too many options of graphical representation; terminology-> steep learning curve.
+18.	Constraints and activities 
+How can we combine activities/action, constraints, and parametrics
+19.	Different modeling levels for different engineering disciplines (much more for electronics than for mechanics). Electrical connections and mechanical flanges. Is it really a problem?
+20.	Metrics 
+Sandy's books lists a set of metrics for models. We should see what could be useful.
+21.	Interface modeling 
+Manage different levels of details depending on engineering discipline. 
+Software and electrical interfaces/parts can be modeled with a lot of detail whereas optical and mechanical interfaces/parts remain quite abstract.
+22.	What is the physical model? 
+Is the goal of the physical model a Bill of Material (BoM) or is it 
+a set of variants (e.g. the baseline still contains abstract types which are specialized in each variant).
+23.	Integration with other tools 
+The SysML model is leveraged when it can be integrated with other tools to exchange information; e.g. optical parameters are traded off with electronic parameters. Bit come from different external models. 
+24.	Transition to Software (and other engineering disciplines) 
+Where to stop with SW design in the System Model? 
+How does it compare to mechanical design? 
+25.	Demonstrate Added value 
+What are the added values? What can be done to make the model more than 
+a set of consistent diagrams? 
+e.g. mass roll-up, execution of parametric models, plugins to extract information (e.g. power consumption, cost). 
+Parametrics versus custom plugins to extract information. 
+26.	Documentation generation 
+Using SysML views and MD's engine to generate documentation from the model 
+27.	How to model physical location? E.g. a cable between Part a and Part b must be 250m long -> impact on latency -> constrain with parametrics
+Bind tags (of stereotypes) in parametric diagrams
+
+21) Dividing line between ontology and system model
+when do I define something as a conceptual model element in the system model and when as a <<stereotype>>
