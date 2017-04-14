@@ -1,1 +1,1 @@
-# SE-Cookbook
+# OpenSE-Cookbook
