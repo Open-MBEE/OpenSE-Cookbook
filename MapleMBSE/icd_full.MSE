@@ -1,0 +1,159 @@
+import-ecore "http://www.nomagic.com/magicdraw/UML/2.5"
+import-ecore "http://maplembse.maplesoft.com/common/1.0" as mse 
+
+workbook {
+	worksheet InterfaceDefinitions(interfaceDefinitions)
+	worksheet InterfaceComponents(interfaceComponents)
+	worksheet ItemFlowInteractions(itemFlowSchema)
+	worksheet InterfaceRequirementsMatrix(interfaceRequirementsMatrix,interfaceRequirementsTable,mouseInterfaceTable)
+}
+
+data-source Root[Model]
+data-source path = Root/packagedElement[Package|name="Interfaces with MapleMBSE"]
+data-source definitions = path/packagedElement[Package|name="2 Interface Definitions"]/packagedElement[Class|mse::metaclassName="SysML::Ports&Flows::InterfaceBlock"]
+data-source custom = path/packagedElement[Package|name="3 Computer Mouse Example"]/packagedElement[Package|name="Custom Interfaces"]/packagedElement[Class|mse::metaclassName="SysML::Ports&Flows::InterfaceBlock"]
+
+// InterfaceDefinitions
+
+synctable-schema InterfacePackage{
+	record dim [Class|mse::metaclassName="SysML::Ports&Flows::InterfaceBlock"]{
+		key column /name as className
+		column /mse::ownedComments[Comment]/body as description
+	}	
+}
+
+synctable interfaceDefinitions = InterfacePackage<custom>
+
+worksheet-template InterfaceDefinitions(infc : InterfacePackage){
+	vertical table tab1 at (3,6) = infc{
+	
+		key field className
+		key field description
+		
+	}
+}
+
+// InterfaceComponents
+
+synctable-schema InterfaceComponentsSchema {
+	record dim [Class|mse::metaclassName="SysML::Ports&Flows::InterfaceBlock"] {
+		key column /name as InterfaceName
+		column /ownedAttribute[Port|mse::metaclassName="SysML::Ports&Flows::ProxyPort"]/name as Port
+		column /ownedAttribute[Port|mse::metaclassName="SysML::Ports&Flows::ProxyPort"].type/name as Type
+		column /ownedAttribute[Property|mse::metaclassName="SysML::Ports&Flows::FlowProperty"]/name as Flow
+	}
+}
+
+synctable interfaceComponents = InterfaceComponentsSchema<custom>
+
+worksheet-template InterfaceComponents(ints:InterfaceComponentsSchema) {
+	vertical table tab at (3,3) = ints {
+	
+		key field InterfaceName: String
+		key field Port: String
+		key field Type: String
+		key field Flow: String
+		
+	}
+}
+
+// ItemFlowInteractions
+
+data-source AllItemFlows*[InformationFlow|mse::metaclassName="SysML::Ports&Flows::ItemFlow",name="flow for DC Power"]
+
+synctable-schema ItemFlowReference{
+	dim [InformationFlow|mse::metaclassName="SysML::Ports&Flows::ItemFlow"]{
+		key column /name as itemFlow
+	}
+}
+
+synctable-schema ItemFlowSchema( itm : ItemFlowReference){
+	record dim [InformationFlow|mse::metaclassName="SysML::Ports&Flows::ItemFlow"]{
+		key column /name as itemFlowName
+		
+		column .target[Port]/name as portTarget
+		column .target[Port].owner[Class]/name as classTarget
+		
+		column .source[Port]/name as portSource
+		key column .source[Port].owner[Class]/name as classSource
+		column  /mse::ownedComments[Comment]/body as commentElement
+	}
+}
+
+synctable itemFlowReference = ItemFlowReference<AllItemFlows>
+synctable itemFlowSchema = ItemFlowSchema<AllItemFlows>(itemFlowReference)
+
+worksheet-template ItemFlowInteractions(itfs : ItemFlowSchema){
+	vertical table tab1 at (3,5) = itfs{
+	
+		field classSource
+		field portSource		
+		key field itemFlowName
+		field classTarget
+		field portTarget
+		field commentElement
+		
+	}
+}
+
+// InterfaceRequirementsMatrix
+
+data-source intrReq = path/packagedElement[Package|name="3 Computer Mouse Example"]/packagedElement[Package|name="Interface Requirements"]/packagedElement[Class|mse::metaclassName="SysML::Requirements::Requirement"]
+data-source blkor = path/packagedElement[Package|name="3 Computer Mouse Example"]/packagedElement[Package|name="Environment"]/packagedElement[Class|mse::metaclassName="SysML::Blocks::Block",name ="Mouse Assembly"]
+
+synctable-schema InterfaceRequirementsTable {
+	dim [Class|mse::metaclassName="SysML::Requirements::Requirement"] {
+		key column /appliedStereotypeInstance[InstanceSpecification]/slot[Slot|mse::featureName="SysML::Requirements::AbstractRequirement::Id"]/value[LiteralString]/value as RID
+		key column /name as ReqName
+		column /appliedStereotypeInstance[InstanceSpecification]/slot[Slot|mse::featureName="SysML::Requirements::AbstractRequirement::Text"]/value[LiteralString]/value as RSpecification
+	}
+}
+
+synctable-schema MouseInterfaceTable{
+	dim [Class|mse::metaclassName="SysML::Blocks::Block",name ="Mouse Assembly"] {
+		key column /name as className
+	}
+	dim /ownedAttribute[Port|mse::metaclassName="SysML::Ports&Flows::ProxyPort",visibility="public",aggregation="composite"]{
+		key column /name as portName
+	}
+}
+
+synctable-schema InterfaceRequirementsMatrix(reqs : InterfaceRequirementsTable){
+	dim [Class|mse::metaclassName="SysML::Blocks::Block",name ="Mouse Assembly"] {
+		key column /name as className
+	}
+	record dim /ownedAttribute[Port|mse::metaclassName="SysML::Ports&Flows::ProxyPort",visibility="public",aggregation="composite"]{
+		key column /name as portName
+	}
+	record dim /mse::clientDependencies[Abstraction|mse::metaclassName="SysML::Requirements::Satisfy"] {
+		key reference-query .supplier @supplierRef
+		reference-decomposition supplierRef = reqs{
+			foreign-key column RID as RID
+			foreign-key column ReqName as ReqName
+			foreign column RSpecification as RSpecification
+		}
+	}
+}
+
+synctable interfaceRequirementsTable = InterfaceRequirementsTable<intrReq>
+synctable mouseInterfaceTable = MouseInterfaceTable<blkor>
+synctable interfaceRequirementsMatrix = InterfaceRequirementsMatrix<blkor>(interfaceRequirementsTable)
+
+worksheet-template InterfaceRequirementsMatrix(mat:InterfaceRequirementsMatrix, tabr:InterfaceRequirementsTable, tabc:MouseInterfaceTable ) {
+    matrix MatrixFR at (7, 5) = mat {
+        const-field "X"
+        row-index = tabr {
+            key field RID : String
+			key field ReqName : String
+			field RSpecification : String
+            unmapped-field
+            sort-keys RID
+        }
+        column-index = tabc {
+			key field className : String
+			key field portName : String
+            unmapped-field
+            sort-keys className
+        }
+    }
+}

@@ -1,0 +1,33 @@
+import-ecore "http://www.nomagic.com/magicdraw/UML/2.5"
+import-ecore "http://maplembse.maplesoft.com/common/1.0" as mse 
+
+workbook {
+	worksheet InterfaceDefinitions(interfaceDefinitions)
+}
+
+data-source Root[Model]
+data-source path = Root/packagedElement[Package|name="Interfaces with MapleMBSE"]
+data-source definitions = path/packagedElement[Package|name="2 Interface Definitions"]/packagedElement[Class|mse::metaclassName="SysML::Ports&Flows::InterfaceBlock"]
+data-source custom = path/packagedElement[Package|name="3 Computer Mouse Example"]/packagedElement[Package|name="Custom Interfaces"]/packagedElement[Class|mse::metaclassName="SysML::Ports&Flows::InterfaceBlock"]
+
+// InterfaceDefinitions
+
+synctable-schema InterfacePackage{
+	record dim [Class|mse::metaclassName="SysML::Ports&Flows::InterfaceBlock"]{
+		key column /name as className
+		column /mse::ownedComments[Comment]/body as description
+	}	
+}
+
+synctable interfaceDefinitions = InterfacePackage<definitions>
+
+worksheet-template InterfaceDefinitions(infc : InterfacePackage){
+	vertical table tab1 at (3,6) = infc{
+	
+		key field className
+		key field description
+		
+	}
+}
+
+
