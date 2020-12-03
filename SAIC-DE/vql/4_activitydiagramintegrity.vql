@@ -1,0 +1,359 @@
+package vql.saic.group.activitydiagramintegrity;
+
+import vql.saic.helper.shared.unnamedElement;
+import vql.saic.helper.shared.activityNodeWithoutOF;
+import vql.saic.helper.shared.elementWithoutSignalType;
+
+// --- AcceptEventOutputRule ---
+
+@Constraint(key = {action})
+pattern actionWithNonTimeEventTriggerWithoutOutputPin(action: AcceptEventAction){
+	neg find triggerIsTimeEvent(action);
+	neg AcceptEventAction.result(action, _);
+}
+
+/* private */ pattern triggerIsTimeEvent(action: AcceptEventAction){
+	AcceptEventAction.trigger(action, trigger);
+	Trigger.event(trigger, event);
+	TimeEvent(event);
+}
+
+// --- AcceptEventSignalMatchRule ---
+
+@Constraint(key = {action})
+pattern acceptEventTriggerSignalDoesNotMatchOutputPinSignal(action: AcceptEventAction){
+	AcceptEventAction.trigger(action, trigger);
+	Trigger.event(trigger, event);
+	SignalEvent.signal(event, signalOfEventAction);
+	Signal(signalOfEventAction);
+	
+	AcceptEventAction.result(action, outputPin);
+	OutputPin.type(outputPin, signalOfOutputPin);
+	Signal(signalOfOutputPin);
+	
+	signalOfEventAction != signalOfOutputPin;
+} or {
+	AcceptEventAction.trigger(action, trigger);
+	Trigger.event(trigger, event);
+	SignalEvent.signal(event, signalOfEventAction);
+	Signal(signalOfEventAction);
+	
+	AcceptEventAction.result(action, outputPin);
+	neg OutputPin.type(outputPin, _);
+}
+
+// --- AcceptEventTimeTriggerRule ---
+
+@Constraint(key = {action})
+pattern acceptEventWithFaultyTimeTrigger(action: AcceptEventAction){
+	find actionHasTimeEventTrigger(action, event);
+	TimeEvent.when(event, when);
+	neg find valueSpecificationIsCorrect(when);
+} or {
+	find actionHasTimeExpressionWithValueSpec(action, spec);
+	OpaqueExpression.body(spec, "");
+} or {
+	find actionHasTimeExpressionWithValueSpec(action, spec);
+	LiteralString.value(spec, "");
+}
+
+/* private */ pattern valueSpecificationIsCorrect(expression: TimeExpression){
+	TimeExpression.expr(expression, valueSpec);
+	LiteralString(valueSpec);
+} or {
+	TimeExpression.expr(expression, valueSpec);
+	OpaqueExpression(valueSpec);	
+} or {
+	TimeExpression.expr(expression, valueSpec);
+	StringExpression(valueSpec);	
+}
+
+/* private */ pattern actionHasTimeEventTrigger(action: AcceptEventAction, event: TimeEvent){
+	AcceptEventAction.trigger(action, trigger);
+	Trigger.event(trigger, event);
+}
+
+/* private */ pattern actionHasTimeExpressionWithValueSpec(action: AcceptEventAction, spec: ValueSpecification){
+	find actionHasTimeEventTrigger(action, event);
+	TimeEvent.when(event, expression);
+	TimeExpression.expr(expression, spec);
+}
+
+// --- ActivityEdgeGuardRule ---
+
+@Constraint(key = {edge})
+pattern flowExitingDecisionNodeWithoutGuard(edge: ActivityEdge){
+	ActivityEdge.source(edge, source);
+	DecisionNode(source);
+	neg ActivityEdge.guard(edge, _);
+}
+
+// --- ActivityOwnsDiagramWithFinalNodeRule ---
+
+@Constraint(key = {activity})
+pattern activityWithoutOneFinalNodeWithExactlyOneIncomingCF(activity: Activity){
+	Activity.ownedDiagram(activity, _);
+	neg find activityHasFinalNodeWithExactlyOneIncomingCF(activity);
+}
+
+/* private */ pattern activityHasFinalNodeWithExactlyOneIncomingCF(activity: Activity){
+	Activity.node(activity, node);
+	1 == count find finalNodeHasIncomingControlFlow(node, _);
+}
+
+/* private */ pattern finalNodeHasIncomingControlFlow(node: ActivityFinalNode, flow: ControlFlow){
+	ActivityFinalNode.incoming(node, flow);
+}
+
+// --- ActivityOwnsDiagramWithInitialNodeRule ---
+
+@Constraint(key = {activity})
+pattern activityWithoutOneInitialNodeAndOneOutgoingCF(activity : Activity) {
+	Activity.ownedDiagram(activity, _);
+	neg find activityWithOneInitialNodeAndOneOutgoingCF(activity);
+}
+
+/* private */ pattern activityWithOneInitialNodeAndOneOutgoingCF(activity : Activity) {
+	1 == count find activityHasInitialNode(activity, _);
+	find activityHasInitialNode(activity, node);
+
+	1 == count InitialNode.outgoing(node, _);
+	InitialNode.outgoing(node, flow);
+	ControlFlow(flow);
+}
+
+/* private */ pattern activityHasInitialNode(activity : Activity, node : InitialNode) {
+	Activity.node(activity, node);
+}
+
+// --- ActivityParameterFlowRule ---
+
+@Constraint(key = {parameter})
+pattern activityParamNodeWithoutOF(parameter: ActivityParameterNode){
+	find activityNodeWithoutOF(parameter);
+}
+
+// --- ActpartypeRule ---
+
+@Constraint(key = {node})
+pattern actpartypeWithoutSignalType(node: ActivityParameterNode){
+	find elementWithoutSignalType(node);
+}
+
+// --- BufferflowRule ---
+
+@Constraint(key = {bufferNode})
+pattern bufferflowWithoutOF(bufferNode: CentralBufferNode){
+	find activityNodeWithoutOF(bufferNode);
+}
+
+// --- CallBehaviorBehaviorRule ---
+
+@Constraint(key = {cba})
+pattern callBehaviorWithoutBehavior(cba: CallBehaviorAction){
+	neg CallBehaviorAction.behavior(cba, _);
+}
+
+// --- CallBehaviorSelfRule ---
+
+@Constraint(key = {cba})
+pattern callBehaviorActionCallsActivityWhichOwnsIt(cba: CallBehaviorAction){
+	CallBehaviorAction.behavior(cba, behavior);
+	Activity.node(behavior, cba);
+}
+
+// --- CallOperationOperationRule ---
+
+@Constraint(key = {coa})
+pattern callOperationWithoutOperation(coa: CallOperationAction){
+	neg CallOperationAction.operation(coa, _);
+}
+
+// --- ControlNodeEdgeMismatchRule ---
+
+@Constraint(key = {node})
+pattern controlNodeEdgeMismatch(node : ControlNode) {
+	ControlNode.incoming(node, cf);
+	ControlNode.outgoing(node, of);
+	ControlFlow(cf);
+	ObjectFlow(of);
+} or {
+	ControlNode.incoming(node, of);
+	ControlNode.outgoing(node, cf);
+	ControlFlow(cf);
+	ObjectFlow(of);
+}
+
+// --- ControlNodeIncomingRule ---
+
+@Constraint(key = {node})
+pattern controlNodeWithoutAtLeastTwoIncomingFlows(node : ControlNode) {
+	find isAppliedForControlNodeType(node);
+	N == count ControlNode.incoming(node, _);
+	check(N < 2);
+}
+
+/* private */ pattern isAppliedForControlNodeType(node: ControlNode){
+	JoinNode(node); 
+} or {
+	MergeNode(node);
+}
+
+// --- ControlNodeOutgoingRule ---
+
+@Constraint(key = {node})
+pattern controlNodeWithoutAtLeastTwoOutgoingFlows(node : ControlNode) {
+	find isAppliedForControlNodeWithOutgoingType(node);
+	N == count ControlNode.outgoing(node, _);
+	check(N < 2);
+}
+
+/* private */ pattern isAppliedForControlNodeWithOutgoingType(node: ControlNode){
+	ForkNode(node); 
+} or {
+	DecisionNode(node);
+}
+
+// --- DataStoreTypeRule ---
+
+@Constraint(key = {node})
+pattern dataStoreWithoutSignalType(node: CentralBufferNode){
+	find elementWithoutSignalType(node);
+}
+
+// --- DecisionNodeNameRule ---
+
+@Constraint(key = {node})
+pattern decisionNodeWithoutName(node: DecisionNode){
+	find unnamedElement(node);
+}
+
+// --- FlowFinalNodeIncomingRule ---
+
+@Constraint(key = {node})
+pattern flowFinalNodeWithoutIncomingFlow(node : FlowFinalNode) {
+	neg ControlNode.incoming(node, _);
+}
+
+// --- InputPinObjectFlowRule ---
+
+@Constraint(key = {pin})
+pattern inputPinWithoutIncomingFlow(pin: InputPin){
+	neg InputPin.name(pin, "target");
+	neg InputPin.incoming(pin, _);
+}
+
+// --- ObjectFlowSourceRule ---
+
+@Constraint(key = {flow})
+pattern objectFlowHasIncorrectSource(flow: ObjectFlow){
+	neg find objectFlowHasCorrectSource(flow);
+}
+
+/* private */ pattern objectFlowHasCorrectSource(flow : ObjectFlow) {
+	find objectFlowHasSource(flow, source);
+	find sourceIsCorrect(source);
+}
+
+/* private */ pattern sourceIsCorrect(source: ActivityNode){
+	ActivityParameterNode(source);
+} or {
+	CentralBufferNode(source);
+} or {
+	DataStoreNode(source);
+} or {
+	DecisionNode(source);
+} or {
+	ForkNode(source);
+} or {
+	JoinNode(source);
+} or {
+	MergeNode(source);
+} or {
+	OutputPin(source);
+}
+
+/* private */ pattern objectFlowHasSource(flow : ObjectFlow, source : ActivityNode) {
+	ObjectFlow.source(flow, source);
+}
+
+// --- ObjectFlowSourceTargetRule ---
+
+@Constraint(key = {flow})
+pattern objectFlowDirectlyConnectedWithAction(flow: ObjectFlow){
+	find sourceIsAEAOrSSA(flow);
+} or {
+	find targetIsAEAOrSSA(flow);
+}
+
+/* private */ pattern sourceIsAEAOrSSA(flow: ObjectFlow){
+	ObjectFlow.source(flow, source);
+	AcceptEventAction(source);
+} or {
+	ObjectFlow.source(flow, source);
+	SendSignalAction(source);	
+}
+
+/* private */ pattern targetIsAEAOrSSA(flow: ObjectFlow){
+	ObjectFlow.target(flow, source);
+	AcceptEventAction(source);
+} or {
+	ObjectFlow.target(flow, source);
+	SendSignalAction(source);	
+}
+
+// --- OutputPinObjectFlowRule ---
+
+@Constraint(key = {pin})
+pattern outputPinWithoutOutgoingFlow(pin: OutputPin){
+	neg OutputPin.outgoing(pin, _);
+}
+
+// --- SendSignalMatchRule ---
+
+@Constraint(key = {signalAction})
+pattern sendSignalMismatchInputPinSignal(signalAction: SendSignalAction){
+	find hasSignal(signalAction, _);
+	neg find hasTargetInputPinWithMatchingSignal(signalAction);
+	neg find hasArgumentInputPinWithMatchingSignal(signalAction);
+}
+
+/* private */ pattern hasTargetInputPinWithMatchingSignal(signalAction: SendSignalAction){
+	find inputPinWithMatchingSignal(inputPin, signalAction);
+	SendSignalAction.target(signalAction, inputPin);
+}
+
+/* private */ pattern hasArgumentInputPinWithMatchingSignal(signalAction: SendSignalAction){
+	find inputPinWithMatchingSignal(inputPin, signalAction);
+	SendSignalAction.argument(signalAction, inputPin);
+}
+
+/* private */ pattern inputPinWithMatchingSignal(inputPin: InputPin, signalAction: SendSignalAction){
+	find hasSignal(signalAction, signalOfAction);
+	InputPin.type(inputPin, signalOfAction);
+}
+
+/* private */ pattern hasSignal(signalAction: SendSignalAction, signal: Signal){
+	SendSignalAction.signal(signalAction, signal);
+}
+
+// --- SendSignalPinRule ---
+
+@Constraint(key = {signal})
+pattern sendSignalWithoutInputPin(signal: SendSignalAction){
+	// SendSignalAction.OwnedElement = InputPin
+	neg SendSignalAction.target(signal, _);
+	neg find hasInputPinAsArgument(signal);
+}
+
+/* private */ pattern hasInputPinAsArgument(signal: SendSignalAction){
+	SendSignalAction.argument(signal, argument);
+	InputPin(argument);
+}
+
+// --- SignalEventSignalRule ---
+
+@Constraint(key = {event})
+pattern signalEventWithoutSignal(event: SignalEvent){
+	neg SignalEvent.signal(event, _);
+}

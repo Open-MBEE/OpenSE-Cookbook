@@ -1,0 +1,275 @@
+package vql.saic.group.flowintegrity;
+
+import vql.saic.helper.profile.saic.flowset;
+import vql.saic.helper.profile.saic.flowset_individualFlows;
+import vql.saic.helper.profile.saic.IFExtension_realizingTransition;
+import vql.saic.helper.shared.conveyedOrConveyedOfSet;
+import vql.saic.helper.shared.inferredConveyed;
+import vql.saic.helper.shared.elementWithoutSignalType;
+import sysml.ProxyPort;
+import sysml.Block;
+import sysml.ItemFlow;
+import sysml.FlowProperty;
+
+// --- AcceptEventPortMatchRule ---
+
+@Constraint(key = {action})
+pattern acceptEventPortDoesNotMatchSourcePort(action: AcceptEventAction){
+	AcceptEventAction.trigger(action, trigger);
+	Trigger.port(trigger, port);
+	neg find acceptEventActionSourcePort(action, port);
+}
+
+/* private */ pattern acceptEventActionSourcePort(action: AcceptEventAction, port: Port){
+	find acceptEventActionToInformationFlow(action, informationFlow);
+	InformationFlow.realizingConnector(informationFlow, connector);
+	Connector.end(connector, end);
+	ConnectorEnd.role(end, port);
+} or {
+	find acceptEventActionToSourcePortViaFlowset(action, port); 
+} or {
+	find acceptEventActionToInformationFlow(action, informationFlow);
+	InformationFlow.informationSource(informationFlow, block); 
+	find Block(block, _);
+	Class.ownedAttribute(block, port);
+}
+
+/* private */ pattern acceptEventActionToInformationFlow(action: AcceptEventAction, informationFlow: InformationFlow){
+	AcceptEventAction.result(action, output);
+	OutputPin.outgoing(output, outgoing);
+	ObjectFlow(outgoing);
+	InformationFlow.realizingActivityEdge(informationFlow, outgoing);
+}
+
+/* private */ pattern acceptEventActionToSourcePortViaFlowset(action: AcceptEventAction, port: Port){
+	find acceptEventActionToInformationFlow(action, informationFlow);
+	find flowset(informationFlow, _);
+	find ProxyPort(port, _);
+	InformationFlow.informationSource(informationFlow, port);  
+}
+
+// --- AcceptOutgoingRule ---
+
+@Constraint(key = {acceptEventAction})
+pattern signalIsNotConveyedByItemFlowOrFlowset(acceptEventAction : AcceptEventAction){
+	AcceptEventAction.result(acceptEventAction, pin);
+	OutputPin.outgoing(pin, outgoing);
+	ObjectFlow(outgoing);
+	InformationFlow.realizingActivityEdge(informationFlow, outgoing);
+	
+	AcceptEventAction.trigger(acceptEventAction, trigger);
+	Trigger.event(trigger, event);
+	SignalEvent.signal(event, signal);
+	
+	neg find conveyedOrConveyedOfSet(informationFlow, signal);
+	neg find inferredConveyed(informationFlow, signal);
+}
+
+// --- ConveyTypeRule ---
+
+@Constraint(key = {flow})
+pattern conveyedFlowWithoutSignal(flow: InformationFlow){
+	find ItemFlow(flow, _);
+	InformationFlow.conveyed(flow, conveyed);
+	neg Signal(conveyed);
+}
+
+// --- FlowConnectorRule ---
+
+@Constraint(key = {flow})
+pattern flowIsNotRealizedByAnyConnector(flow: InformationFlow){
+	neg find flowset(flow, _);
+	neg InformationFlow.realizingConnector(flow, _);
+}
+
+// --- FlowSetEndRule ---
+
+@Constraint(key = {flowSet})
+pattern flowSetSourceOrTargetIsNotRealizedByIndividualFlow(flowSet: InformationFlow){
+	find isFlowsetWithIndividualFlows(flowSet);
+	neg find informationSourceIsRealized(flowSet);
+} or {
+	find isFlowsetWithIndividualFlows(flowSet);
+	neg find informationTargetIsRealized(flowSet);
+}
+
+/* private */ pattern informationSourceIsRealized(flowSet: InformationFlow){
+	InformationFlow.informationSource(flowSet, role);
+	find flowsetHasFlowWithRole(flowSet, role);
+}
+
+/* private */  pattern informationTargetIsRealized(flowSet: InformationFlow){
+	InformationFlow.informationTarget(flowSet, role);
+	find flowsetHasFlowWithRole(flowSet, role);
+}
+
+/* private */  pattern flowsetHasFlowWithRole(flowSet: InformationFlow, role: ConnectableElement){
+	find flowset_individualFlows(flowSet, flow);
+	find rolesOfIndividualFlow(flow, role);
+}
+
+/* private */  pattern rolesOfIndividualFlow(individualFlow: InformationFlow, role: ConnectableElement){
+	InformationFlow.realizingConnector(individualFlow, connector);
+	Connector.end(connector, end);
+	ConnectorEnd.role(end, role);
+}
+
+/* private */ pattern isFlowsetWithIndividualFlows(flowSet: InformationFlow){ 
+	find flowset(flowSet, _);
+	find flowset_individualFlows(flowSet, _);
+}
+
+// --- FlowTypeRule ---
+
+@Constraint(key = {property})
+pattern flowPropertyWithoutSignalType(property: Property){
+	find FlowProperty(property, _);
+	find elementWithoutSignalType(property);
+}
+
+// --- ItemFlowConveyedRule ---
+
+@Constraint(key = {flow})
+pattern itemFlowWithoutSignalOrFlowSet(flow: InformationFlow){
+	find ItemFlow(flow, _);
+	neg find flowset(flow, _);
+	
+	neg InformationFlow.conveyed(flow, _);
+	neg find flowset_individualFlows(_, flow);
+}
+
+// --- MessageFlowRule ---
+
+@Constraint(key = {message})
+pattern itemFlowOrFlowSetDoesNotConveyMessageSignature(message: Message){
+	InformationFlow.realizingMessage(informationFlow, message);
+	Message.signature(message, signature);
+	neg find conveyedOrConveyedOfSet(informationFlow, signature);
+}
+
+// --- ObjeftFlowCompatRule ---
+
+@Constraint(key = {objectFlow})
+pattern sourceSignalIsNotConveyedByItemFlowOrFlowSet(objectFlow : ObjectFlow){
+	InformationFlow.realizingActivityEdge(informationFlow, objectFlow);
+	
+	ObjectFlow.source(objectFlow ,source);
+	OutputPin.type(source, signal);
+	
+	neg find conveyedOrConveyedOfSet(informationFlow, signal);
+	neg find inferredConveyed(informationFlow, signal);
+}
+
+// --- SendIncomingRule ---
+
+@Constraint(key = {sendSignalAction})
+pattern sendSignalIsNotConveyedByItemFlowOrFlowset(sendSignalAction : SendSignalAction){
+	find inputPin(sendSignalAction, inputPin);
+	InputPin.incoming(inputPin, incoming);
+	ObjectFlow(incoming);
+	InformationFlow.realizingActivityEdge(informationFlow, incoming);
+	
+	SendSignalAction.signal(sendSignalAction, signal);
+	
+	neg find conveyedOrConveyedOfSet(informationFlow, signal);
+	neg find inferredConveyed(informationFlow, signal);
+}
+
+/* private */ pattern inputPin(sendSignalAction: SendSignalAction, inputPin: InputPin){
+	SendSignalAction.target(sendSignalAction, inputPin);
+} or {
+	SendSignalAction.argument(sendSignalAction, inputPin);
+}
+
+// --- SendSignalPortMatchRule ---
+
+@Constraint(key = {action})
+pattern sendSignalPortDoesNotMatchTargetPort(action: SendSignalAction){
+	SendSignalAction.onPort(action, port);
+	find sendSignalActionTargetPort(action, targetPort);
+	port != targetPort;
+}
+
+/* private */ pattern sendSignalActionTargetPort(action: SendSignalAction, port: Port){
+	SendSignalAction.target(action, input);
+	InputPin.incoming(input, incoming);
+	find objectFlowTargetPort(incoming, port);
+}
+
+/* private */ pattern objectFlowTargetPort(objectFlow: ObjectFlow, port: Port){
+	neg find objectFlowHasASpecialNodeTarget(objectFlow);
+	find objectFlowRealizesPort(objectFlow, port);
+	find objectFlowRealizedConnectorEnd(objectFlow, port);
+}
+
+/* private */ pattern objectFlowHasASpecialNodeTarget(objectFlow: ObjectFlow){
+	ObjectFlow.target(objectFlow, target);
+	find targetIsASpecialNode(target);
+}
+
+/* private */ pattern targetIsASpecialNode(target: ActivityNode){
+	ActivityParameterNode(target);
+} or {
+	DecisionNode(target);
+} or {
+	ForkNode(target);
+} or {
+	JoinNode(target);
+} or {
+	MergeNode(target);
+}
+
+/* private */ pattern objectFlowRealizesPort(objectFlow: ObjectFlow, port: Port){
+	find objectFlowRealizedFlows(objectFlow, realizedFlow);
+	find ItemFlow(realizedFlow, _);
+	InformationFlow.informationTarget(realizedFlow, informationTarget);
+	find Block(informationTarget, _);
+	Class.ownedAttribute(informationTarget, port);
+	find ProxyPort(port, _);
+} or {
+	find objectFlowRealizedFlows(objectFlow, realizedFlow);
+	find flowset(realizedFlow, _);
+	InformationFlow.informationTarget(realizedFlow, port);
+	find ProxyPort(port, _);
+}
+
+/* private */ pattern objectFlowRealizedFlows(objectFlow: ObjectFlow, realizedFlow: InformationFlow){
+	InformationFlow.realizingActivityEdge(realizedFlow, objectFlow);
+}
+
+/* private */ pattern objectFlowRealizedConnectorEnd(objectFlow: ObjectFlow, port: Port){
+	find objectFlowRealizedFlows(objectFlow, realizedFlow);
+	find ItemFlow(realizedFlow, _);
+	InformationFlow.realizingConnector(realizedFlow, connector);
+	Connector.end(connector, end);
+	ConnectorEnd.role(end, port);	
+} or {
+	find objectFlowRealizedFlows(objectFlow, realizedFlow);
+	find flowset(realizedFlow, _);
+	find realizingConnectorOfSet(realizedFlow, connector);
+	Connector.end(connector, end);
+	ConnectorEnd.role(end, port);	
+}
+
+/* private */ pattern realizingConnectorOfSet(flowset: InformationFlow, realizingConnector: Connector){
+	find flowset(flowset, _);
+	find flowset_individualFlows(flowset, individualFlow);
+	find ItemFlow(individualFlow, _);
+	InformationFlow.realizingConnector(individualFlow, realizingConnector);
+}
+
+// --- TriggerFlowMismatchRule ---
+
+@Constraint(key = {transition})
+pattern signalTriggerIsNotConveyedOnInformationFlow(transition: Transition){
+	find IFExtension_realizingTransition(ifo, transition);
+	find signalTriggeringTransition(transition, signal);
+	neg find conveyedOrConveyedOfSet(ifo, signal);
+	neg find inferredConveyed(ifo, signal);
+}
+
+private pattern signalTriggeringTransition(transition: Transition, signal: Signal){
+	Transition.trigger(transition, trigger);
+	Trigger.event(trigger, event);
+	SignalEvent.signal(event, signal);
+}

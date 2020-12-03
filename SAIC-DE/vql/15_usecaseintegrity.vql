@@ -1,0 +1,77 @@
+package vql.saic.group.usecaseintegrity;
+
+import vql.saic.helper.shared.ownedEndIsActor;
+import vql.saic.helper.shared.actorIsAssociatedWithUseCase;
+import vql.saic.helper.shared.ownedEndIsUseCase;
+
+import sysml.Refine;
+import sysml.Trace;
+
+// --- ActorAssociationRule ---
+
+@Constraint(key = {association})
+pattern assocationBetweenTwoActors(association : Association) {
+	N == count find ownedEndIsActor(association, _);
+	check (N > 1);
+}
+
+// --- ActorAssociationsRule ---
+
+@Constraint(key = {actor})
+pattern actorIsNotAssociatedWithAnyUseCase(actor: Actor){
+	neg find actorIsAssociatedWithUseCase(actor);
+}
+
+// --- ActorUseCaseRule ---
+
+@Constraint(key = {actor})
+pattern actorIsWrong(actor : Actor) {
+	neg find actorIsAssociatedWithUseCase(actor);
+	neg Generalization.general(_, actor);
+}
+
+// --- ExtendLocationRule ---
+
+@Constraint(key = {extend})
+pattern extendWithoutExtensionLocation(extend: Extend){
+	neg Extend.extensionLocation(extend, _);
+}
+
+// --- ExtensionPointRule ---
+
+@Constraint(key = {extensionPoint})
+pattern extensionPointWithoutExtension(extensionPoint: ExtensionPoint){
+	neg ExtensionPoint.^extension(extensionPoint, _);
+}
+
+// --- UseCaseAssociationRule ---
+
+@Constraint(key = {association})
+pattern associationBetweenTwoUseCases(association : Association) {
+	N == count find ownedEndIsUseCase(association);
+	check (N > 1);
+}
+
+// --- UseCaseTraceRule ---
+
+@Constraint(key = {uc})
+pattern usecaseTraceWithMissingTraces(uc: UseCase){
+	neg find hasSource(uc);
+	neg find hasTarget(uc);
+}
+
+// UseCase._directedRelationshipOfSource
+private pattern hasSource(uc: UseCase){
+	Abstraction.client(refine, uc);
+	find Refine(refine, _);
+} or {
+	Abstraction.client(trace, uc);
+	find Trace(trace, _);
+} or {
+	Extend.^extension(_, uc);
+}
+
+// UseCase._directedRelationshipOfTarget
+private pattern hasTarget(uc: UseCase){
+	Include.addition(_, uc);
+}

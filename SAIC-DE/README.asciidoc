@@ -8,12 +8,13 @@ Version history
 |==================
 |Date|VQL Validation rules for SAIC DE Profile Version|SAIC DE Profile Version|Change notes
 |19.11.2020|1.0.0|V1| Initial release
+|03.12.2020|1.0.1|V1| Remove "validationSuite" annotation from package "Completeness". Fix project name in import statements. Create explicit patterns for rules that used helper rules for validation.
 |==================
 
-Use the profile to validate your SysML model
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Use the profile in a systems engineering tool* to validate your SysML model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1.	The _VQL Validation rules for SAIC DE Profile_ relies on _IncQuery Desktop_ to the validation rules in your systems modeling tool (Magic Draw or Cameo Systems Modeler). Therefore, you need to install the _IncQuery Desktop_ plugin beforehand. Get an evaluation license for the plugin via link:https://www.incquery.io[www.incquery.io].
+1.	The _VQL Validation rules for SAIC DE Profile_ relies on _IncQuery Desktop_ to the validation rules in your systems engineering tool*. Therefore, you need to install the _IncQuery Desktop_ plugin beforehand. Get an evaluation license for the plugin via link:https://www.incquery.io[www.incquery.io].
 
 2.	Open the SysML project whose models you would like to validate in your modeling tool.
 
@@ -30,3 +31,19 @@ a.	The validation rules which constitute the validation suite, can be found in t
 7.	Use this validation suite to validate your model. Go to Analyze -> Validation ->  Validate… -> Select _VQL ValSuite – SAIC DE Profile_ as validation suite. Set the validation scope and the minimal severity, and then run the validation.
 
 8.	The results of the validation can be seen in the Validation Results view.
+
+
+Register query definitions and analysis configuration on IncQuery Server
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. For each vql file in the `vql` folder, in the same order as they are in the folder, do:
+	* Register the content of the vql file, except the `package` declaration, via the `queries.registerPlainText` REST endpoint of IncQuery Server (e.g., http://localhost:8082/#/swagger).
+	* Set the `queryPackage` parameter of the request for the same name as the `package` declaration in the vql file.
+	
+2. Copy the content of `Analysis configuration.json` from `vql` folder into the request body of the `analysis.register` endpoint of IncQuery Server (e.g., http://localhost:8082/#/swagger).
+
+
+Notes
+~~~~~~
+
+$$*$$ Supported systems engineering tools: Cameo Systems Modeler and MagicDraw. 

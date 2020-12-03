@@ -1,0 +1,74 @@
+package vql.saic.group.requirements;
+
+import sysml.extendedRequirement;
+import sysml.Refine;
+import sysml.functionalRequirement;
+import sysml.performanceRequirement;
+import sysml.Requirement;
+import sysml.Trace;
+import sysml.AbstractRequirement_Text;
+import sysml.Satisfy;
+import sysml.Verify;
+
+// --- PerformanceFunctionRefineRule ---
+
+@Constraint(key = {performanceReq})
+pattern performanceRequirementDoesNotRefineAnyFunctionRequirement(performanceReq: Class){
+	find performanceRequirement(performanceReq, _);
+	find extendedRequirement(performanceReq, _);
+	neg find refinesFunctionalRequirement(performanceReq);
+}
+
+private pattern refinesFunctionalRequirement(req: Class){
+	find Refine(refine, _);
+	Abstraction.client(refine, req);
+	Abstraction.supplier(refine, target);
+	find functionalRequirement(target, _);
+}
+
+// --- ReqtraceRule ---
+
+@Constraint(key = {req})
+pattern requirementWithoutRefine(req: Class){
+	find Requirement(req, _);
+	neg find hasRefine(req);
+	neg find hasOutgoingTrace(req);
+}
+
+/* private */ pattern hasRefine(req: Class){
+	Abstraction.client(refine, req);
+	find Refine(refine, _);
+}
+
+/* private */ pattern hasOutgoingTrace(req: Class){
+	Abstraction.client(trace, req);
+	find Trace(trace, _);
+}
+
+// --- RequirementSatisfyRule ---
+
+@Constraint(key = {req})
+pattern requirementWithoutSatisfy(req: Class){
+	find AbstractRequirement_Text(req, _);
+	find Requirement(req, _);
+	neg find hasSatisfy(req);
+}
+
+/* private */ pattern hasSatisfy(req: Class){
+	Abstraction.supplier(cls, req);
+	find Satisfy(cls, _);
+}
+
+// --- RequirementVerifyRule ---
+
+@Constraint(key = {req})
+pattern requirementWithoutVerify(req: Class){
+	find AbstractRequirement_Text(req, _);
+	find Requirement(req, _);
+	neg find hasVerify(req);
+}
+
+/* private */ pattern hasVerify(req: Class){
+	Abstraction.supplier(verify, req);
+	find Verify(verify, _);
+}

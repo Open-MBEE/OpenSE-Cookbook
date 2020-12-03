@@ -1,0 +1,29 @@
+package vql.saic.helper.profile.magicdraw;
+
+pattern HyperlinkOwner(element : Element, domainStereotypeInstance : InstanceSpecification){
+	find util.stereotypedElement(element, domainStereotypeInstance, "MagicDraw Profile", "HyperlinkOwner");
+}
+
+pattern HyperlinkOwner_hyperlinkModelActive(element : Element, value : Element){
+	find HyperlinkOwner(element, domainStereotypeInstance);
+	find util.slotValue(domainStereotypeInstance, "hyperlinkModelActive", valuespec);
+	ElementValue.element(valuespec, value);
+}
+
+pattern HyperlinkOwner_hyperlinkTextActive(element : Element, valuespec : LiteralString){
+	find HyperlinkOwner(element, domainStereotypeInstance);
+	find util.slotValue(domainStereotypeInstance, "hyperlinkTextActive", valuespec);
+}
+
+pattern AttachedFile_file(element : Comment, valuespec : LiteralString){
+	find AttachedFile(element, domainStereotypeInstance);
+	find util.slotValue(domainStereotypeInstance, "file", valuespec);
+}
+
+pattern AttachedFile(element : Comment, domainStereotypeInstance : InstanceSpecification){
+	find util.stereotypedElement(element, domainStereotypeInstance, "MagicDraw Profile", "AttachedFile");
+}
+
+pattern Legend(element : Class, domainStereotypeInstance : InstanceSpecification){
+	find util.stereotypedElement(element, domainStereotypeInstance, "MagicDraw Profile", "Legend");
+}

@@ -1,0 +1,236 @@
+package vql.saic.group.statemachineintegrity;
+
+import vql.saic.helper.profile.saic.IFExtension_realizingTransition
+import vql.saic.helper.shared.ownerIsEitherStateOrTransition;
+import vql.saic.helper.shared.isBlocklike;
+import sysml.Block;
+import util.compatibleClassifier;
+
+// --- ActivityActionRule ---
+
+@Constraint(key = {activity})
+pattern activityWithoutAction(activity: Activity){
+	find ownerIsEitherStateOrTransition(activity);
+	neg CallBehaviorAction.activity(_, activity);
+	neg CallOperationAction.activity(_, activity);
+}
+
+// --- ActivityParameterRule ---
+
+@Constraint(key = {activity})
+pattern activityWithParameter(activity: Activity){
+	find ownerIsEitherStateOrTransition(activity);
+	Activity.ownedParameter(activity, _);
+}
+
+// --- ChangeEventExpressionRule ---
+
+@Constraint(key = {transition})
+pattern changeEventWithoutExpression(transition: Transition){
+	find transitionTriggerEvent(transition, event);
+	ChangeEvent.changeExpression(event, expression);
+	neg OpaqueExpression.body(expression, _);
+} or {
+	find transitionTriggerEvent(transition, event);
+	neg ChangeEvent.changeExpression(event, _);
+}
+
+/* private */ pattern transitionTriggerEvent(transition: Transition, event: ChangeEvent){
+	Transition.trigger(transition, trigger);
+	Trigger.event(trigger, event);
+}
+
+// --- ConnectionPointTransitionRule ---
+
+@Constraint(key = {cp})
+pattern connectionPointHasMoreThanOneTransitions(cp: ConnectionPointReference){
+	I == count ConnectionPointReference.incoming(cp, _);
+	O == count ConnectionPointReference.outgoing(cp, _);
+	check(I + O != 1);
+}
+
+// --- StateIncomingTransitionRule ---
+
+@Constraint(key = {state})
+pattern stateWithoutIncomingTransition(state: State){
+	neg find stateWithIncomingNonLoopTransition(state); 
+}
+
+/* private */ pattern stateWithIncomingNonLoopTransition(state: State){
+	find incomingTransitions(state, transition);
+	neg find outgoingTransitions(state, transition);
+}
+
+/* private */ pattern incomingTransitions(state: State, transition: Transition){
+	State.incoming(state, transition);
+} or {
+	ConnectionPointReference.state(cp, state);
+	ConnectionPointReference.incoming(cp, transition);
+}
+
+/* private */ pattern outgoingTransitions(state: State, transition: Transition){
+	State.outgoing(state, transition);
+} or {
+	ConnectionPointReference.state(cp, state);
+	ConnectionPointReference.outgoing(cp, transition);
+}
+
+// --- StateMachineOperationsRule ---
+
+@Constraint(key = {operation})
+pattern operationIsOwnedByStatemachine(operation: Operation){
+	StateMachine.ownedOperation(_, operation);
+}
+
+// --- StateownerRule ---
+
+@Constraint(key = {stateMachine})
+pattern stateMachineIsNotOwnedByBlock(stateMachine: StateMachine){
+	Class.ownedBehavior(owner, stateMachine);
+	neg find isBlocklike(owner);
+} or {
+	neg Class.ownedBehavior(_, stateMachine);
+}
+
+// --- StmintegrityRule ---
+
+@Constraint(key = {stateMachine})
+pattern stateMachineCallsOperationOutsideStructuralDecomposition(stateMachine : StateMachine) {
+	Class.ownedBehavior(smOwnerBlock, stateMachine);
+	find Block(smOwnerBlock, _);
+
+	// StateMachine calls operation
+	StateMachine.region(stateMachine, region);
+	find regionOwnsCOA(region, callOperation);
+	CallOperationAction.operation(callOperation, operation);
+	// owner of the called operation
+	Class.ownedOperation(operationOwnerBlock, operation);
+	find Block(operationOwnerBlock, _);
+
+	neg find classContainsClassTransitively(smOwnerBlock, operationOwnerBlock);
+	neg find compatibleClassifier(smOwnerBlock, operationOwnerBlock);
+}
+
+/* private */ pattern classContainsClassTransitively(smOwnerBlock : Class, operationOwnerBlock : Class) {
+	find classContainsClass *(smOwnerBlock, operationOwnerBlock);
+}
+
+/* private */ pattern classContainsClass(container : Class, containedClass : Class) {
+	Class.ownedAttribute(container, prop);
+	Property.association(prop, composition);
+	Property.aggregation(prop, ::composite);
+	Association.memberEnd(composition, memberEnd);
+	Property.type(memberEnd, containedClass);
+}
+
+/* private */ pattern regionOwnsBehavior(region : Region, behavior : Behavior) {
+	find regionOwnsState(region, state);
+	State.entry(state, behavior);
+} or {
+	find regionOwnsState(region, state);
+	State.exit(state, behavior);
+} or {
+	find regionOwnsState(region, state);
+	State.doActivity(state, behavior);
+} or {
+	find regionOwnsTransition(region, transition);
+	Transition.effect(transition, behavior);
+}
+
+/* private */ pattern regionOwnsTransition(region: Region, transition: Transition){
+	Region.transition(region, transition);
+} or {
+	find subregion+(region, subregion);
+	Region.transition(subregion, transition);
+}
+
+/* private */ pattern regionOwnsState(region: Region, state: State){
+	Region.subvertex(region, state);
+} or {
+	find subregion+ (region, subregion);
+	Region.subvertex(subregion, state);
+}
+
+/* private */ pattern subregion(owner : Region, region : Region) {
+	Region.subvertex(owner, vertex);
+	State.region(vertex, region);
+}
+
+/* private */ pattern regionOwnsCOA(region : Region, coa : CallOperationAction) {
+	find regionOwnsBehavior(region, activity);
+	Activity.node(activity, coa);
+} or {
+	find regionOwnsBehavior(region, interaction);
+	Interaction.action(interaction, coa);
+}
+
+// --- SubStateMachineConnectionsRule ---
+
+@Constraint(key = {state})
+pattern connectionPointDoesNotRepresentEntryOrExitpoint(state: State){
+	State.connection(state, connection);
+	State.submachine(state, statemachine);
+	
+	Pseudostate.stateMachine(entryPoint, statemachine);
+	Pseudostate.kind(entryPoint, ::entryPoint);
+	neg ConnectionPointReference.entry(connection, entryPoint);
+	
+	Pseudostate.stateMachine(exitPoint, statemachine);
+	Pseudostate.kind(exitPoint, ::exitPoint);
+	neg ConnectionPointReference.exit(connection, exitPoint);
+}
+
+// --- TimeEventWhenRule ---
+
+@Constraint(key = {transition})
+pattern timeEventWithoutWhen(transition: Transition){
+	find hasEventValueSpecification(transition, spec);
+	OpaqueExpression.body(spec, "");
+} or {
+	find hasEventValueSpecification(transition, spec);
+	LiteralString.value(spec, "");
+}
+
+/* private */ pattern hasEventValueSpecification(transition: Transition, spec: ValueSpecification){
+	Transition.trigger(transition, trigger);
+	Trigger.event(trigger, timeEvent);
+	TimeEvent.when(timeEvent, when);
+	TimeExpression.expr(when, spec);
+}
+
+// --- TransitionChoiceRule ---
+
+@Constraint(key = {transition})
+pattern transitionFromChoiceWihoutGuard(transition: Transition){
+	Transition.source(transition, source);
+	Pseudostate.kind(source, ::choice);
+	neg Transition.guard(transition, _);
+}
+
+// --- TransitionTriggerFlowRule ---
+
+@Constraint(key = {transition})
+pattern transitionWithSignalTriggerWithoutInformationFlow(transition: Transition){
+	Transition.trigger(transition, trigger);
+	Trigger.event(trigger, event);
+	SignalEvent(event);
+	
+	// Transition.realizedFlows 
+	neg find IFExtension_realizingTransition(_, transition);
+}
+
+// --- TransitionTriggerRule ---
+
+@Constraint(key = {transition})
+pattern transitionWithoutTrigger(transition: Transition){
+	neg find transitionIsFromCPOrPseudostate(transition);
+	neg Transition.trigger(transition, _);
+}
+
+/* private */ pattern transitionIsFromCPOrPseudostate(transition: Transition){
+	Transition.source(transition, source);
+	ConnectionPointReference(source);
+} or {
+	Transition.source(transition, source);
+	Pseudostate(source);
+}

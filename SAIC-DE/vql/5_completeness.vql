@@ -1,0 +1,236 @@
+package vql.saic.group.completeness;
+
+import vql.saic.helper.profile.magicdraw.HyperlinkOwner_hyperlinkModelActive;
+import vql.saic.helper.profile.magicdraw.HyperlinkOwner_hyperlinkTextActive;
+import vql.saic.helper.profile.saic.sourcecontent;
+import vql.saic.helper.shared.typedElementWithoutType;
+import vql.saic.helper.shared.unnamedElement;
+import sysml.Block;
+import sysml.PartProperty;
+import sysml.Systemcontext;
+import sysml.ValueProperty;
+
+// --- ActivityDocumentationRule ---
+
+@Constraint(key = {activity})
+pattern activityWithoutDocumentation(activity: Activity){
+	find elementWithoutDocumentation(activity);
+}
+
+// --- ActivityNameRule ---
+
+@Constraint(key = {activity})
+pattern activityWithoutName(activity: Activity){
+	find unnamedElement(activity);
+}
+
+// --- ActivityOwnsRule ---
+
+@Constraint(key = {activity})
+pattern nonLeafActivityWithoutDiagramOrOperation(activity: Activity){
+	Activity.isLeaf(activity, false);
+	neg Activity.ownedOperation(activity, _);
+	neg Activity.ownedDiagram(activity, _);
+}
+
+// --- ActorDocumentationRule ---
+
+@Constraint(key = {actor})
+pattern actorWithoutDocumentation(actor: Actor){
+	find elementWithoutDocumentation(actor);
+}
+
+// --- ActorNameRule ---
+
+@Constraint(key = {actor})
+pattern actorWithoutName(actor: Actor){
+	find unnamedElement(actor);
+}
+
+// --- ArtifactFileNameAndHyperlinkRule ---
+
+@Constraint(key = {artifact})
+pattern artifactWithoutFilenameAndHyperlinkRule(artifact : Artifact) {
+	find sourcecontent(artifact, _);
+	find artifactWithoutFilename(artifact);
+	find artifactWithoutHyperlink(artifact);
+}
+
+/* private */ pattern artifactWithoutFilename(artifact : Artifact) {
+	neg Artifact.fileName(artifact, _);
+} or {
+	Artifact.fileName(artifact, "");
+}
+
+/* private */ pattern artifactWithoutHyperlink(artifact : Artifact) {
+	neg find HyperlinkOwner_hyperlinkModelActive(artifact, _);
+	neg find HyperlinkOwner_hyperlinkTextActive(artifact, _);
+}
+
+// --- BlockNameRule ---
+
+@Constraint(key = {block})
+pattern blockWithoutName(block: Class){
+	find Block(block, _);
+	find unnamedElement(block);
+}
+
+// --- ConblockDocumentationRule ---
+
+@Constraint(key = {class})
+pattern blockTypesPartPropertyButHasNoDocumentation(class: Class){
+	find Block(class, _);
+	find PartProperty(property, _);
+	
+	TypedElement.type(property, class);
+	Class.ownedAttribute(context, property);
+	find Systemcontext(context, _);
+	
+	neg Element.ownedComment(class, _);
+}
+
+// --- ElementWithoutDocumentationRule ---
+
+pattern elementWithoutDocumentation(element : Namespace) {
+	find isAppliedForElementType(element);
+	Namespace.ownedComment(element, comment);
+	Comment.body(comment, "");
+} or {
+	find isAppliedForElementType(element);
+	neg Namespace.ownedComment(element, _);
+}
+
+private pattern isAppliedForElementType(element : Namespace) {
+	Activity(element);
+} or {
+	Actor(element);
+} or {
+	Operation(element);
+} or {
+	Signal(element);
+} or {
+	UseCase(element);
+} or {
+	State(element);
+}
+
+// --- OpaqueActionBodyRule ---
+
+@Constraint(key = {action})
+pattern opaqueActionWithEmptyBody(action: OpaqueAction){
+	neg OpaqueAction.body(action, _);
+}
+
+// --- OperationNameRule ---
+
+@Constraint(key = {operation})
+pattern operationWithoutName(operation: Operation){
+	find unnamedElement(operation);
+}
+
+// --- OperationDocumentationRule ---
+
+@Constraint(key = {operation})
+pattern operationWithoutDocumentation(operation: Operation){
+	find elementWithoutDocumentation(operation);
+}
+
+// --- OpusageRule ---
+
+@Constraint(key = {operation})
+pattern operationIsUnused(operation: Operation){
+	neg CallOperationAction.operation(_, operation);
+	neg Message.signature(_, operation);
+}
+
+// --- PackageNameRule ---
+
+@Constraint(key = {pkg})
+pattern packageWithoutName(pkg: Package){
+	find unnamedElement(pkg);
+}
+
+// --- ParameterTypeRule ---
+
+@Constraint(key = {parameter})
+pattern operationParameterWithoutType(parameter: Parameter){
+   Operation.ownedParameter(_, parameter);
+	find typedElementWithoutType(parameter);
+}
+
+// --- RegionNameRule ---
+
+@Constraint(key = {region})
+pattern orthogonalRegionWithoutName(region: Region){
+	State.region(owner, region);
+	N == count State.region(owner, _);
+	check(N > 1);
+	find unnamedElement(region);
+}
+
+// --- SignalNameRule ---
+
+@Constraint(key = {signal})
+pattern signalWithoutName(signal: Signal){
+	find unnamedElement(signal);
+}
+
+// --- StatedDocumentationRule ---
+
+@Constraint(key = {state})
+pattern stateWithoutDocumentation(state: State){
+	// Is Submachine State == false
+	neg State.submachine(state, _);
+	
+	// FinalState == false
+	neg FinalState(state);
+	
+	// Without documentation
+	find elementWithoutDocumentation(state);
+}
+
+// --- SignalDocumentationRule ---
+
+@Constraint(key = {signal})
+pattern signalWithoutDocumentation(signal: Signal){
+	find elementWithoutDocumentation(signal);
+}
+
+// --- StatenameRule ---
+
+@Constraint(key = {state})
+pattern stateWithEmptyName(state: State){
+	find unnamedElement(state);
+	neg State.submachine(state, _);
+	neg FinalState(state);
+}
+
+// --- UseCaseNameRule ---
+
+@Constraint(key = {useCase})
+pattern useCaseWithoutName(useCase: UseCase){
+	find unnamedElement(useCase);
+}
+
+// --- UseCaseDocumentationRule ---
+
+@Constraint(key = {useCase})
+pattern useCaseWithoutDocumentation(useCase: UseCase){
+	find elementWithoutDocumentation(useCase);
+}
+
+// --- ValuePropertyNameRule ---
+
+@Constraint(key = {property})
+pattern valuePropertyWithoutName(property: Property){
+	find ValueProperty(property, _);
+	find unnamedElement(property);
+}
+
+// --- ValuePropertyTypeRule ---
+
+@Constraint(key = {property})
+pattern valuePropertyWithoutType(property: Property){
+	find ValueProperty(property, _);
+	find typedElementWithoutType(property);
+}

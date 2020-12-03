@@ -1,0 +1,252 @@
+package vql.saic.helper.shared;
+
+import sysml.ItemFlow;
+import sysml.Allocate;
+import sysml.ReferenceProperty;
+import sysml.Block;
+import sysml.Domain;
+import sysml.External;
+import sysml.System;
+import sysml.Subsystem;
+import sysml.Systemcontext;
+import sysml.FlowProperty;
+import sysml.ValueProperty;
+import sysml.PartProperty;
+import sysml.ValueType;
+
+import vql.saic.helper.profile.saic.flowset;
+import vql.saic.helper.profile.saic.flowset_individualFlows;
+import vql.saic.helper.profile.saic.IFExtension_realizingTransition;
+
+// --- ActivityNodeFlowRule ---
+
+pattern activityNodeWithoutOF(node : ObjectNode) {
+	find isAppliedForObjectNodeType(node);
+	neg find activityNodeHasIncomingOF(node);
+	neg find activityNodeHasOutgoingOF(node);
+}
+
+/* private */ pattern activityNodeHasIncomingOF(node : ObjectNode) {
+	find isAppliedForObjectNodeType(node);
+	ObjectNode.incoming(node, of);
+	ObjectFlow(of);
+}
+
+/* private */ pattern activityNodeHasOutgoingOF(node : ObjectNode) {
+	find isAppliedForObjectNodeType(node);
+	ObjectNode.outgoing(node, of);
+	ObjectFlow(of);
+}
+
+/* private */ pattern isAppliedForObjectNodeType(node : ObjectNode) {
+	ActivityParameterNode(node);
+} or {
+	CentralBufferNode(node);
+}
+
+// --- ActivityOwnerIsStateOrTransition ---
+
+pattern ownerIsEitherStateOrTransition(activity : Activity) {
+	State.entry(_, activity);
+} or {
+	State.exit(_, activity);
+} or {
+	State.doActivity(_, activity);
+} or {
+	Transition.effect(_, activity);
+}
+
+// --- ActorIsAssociatedWithUseCase ---
+
+pattern actorIsAssociatedWithUseCase(actor : Actor) {
+	find ownedEndIsActor(association, actor);
+	find ownedEndIsUseCase(association);
+}
+
+pattern ownedEndIsActor(association: Association, actor: Actor){
+	Association.ownedEnd(association, end);
+	find propertyTypeIsActor(end, actor);
+}
+
+pattern ownedEndIsUseCase(association: Association){
+	Association.ownedEnd(association, end);
+	find propertyTypeIsUseCase(end);
+}
+
+/* private */ pattern propertyTypeIsActor(property : Property, actor: Actor) {
+	Property.type(property, actor);
+}
+
+/* private */ pattern propertyTypeIsUseCase(property : Property) {
+	Property.type(property, uc);
+	UseCase(uc);
+}
+
+// --- ConveyedOfSetHelper ---
+
+pattern conveyedOrConveyedOfSet(flow : InformationFlow, conveyed : Signal) {
+	find ItemFlow(flow, _);
+	InformationFlow.conveyed(flow, conveyed);
+} or {
+	find flowset(flow, _);
+	InformationFlow.conveyed(flow, conveyed);
+} or {
+	find flowset(flow, _);
+	find flowset_individualFlows(flow, individualFlow);
+	InformationFlow.conveyed(individualFlow, conveyed);
+}
+
+pattern inferredConveyed(flow : InformationFlow, conveyed : Signal) {
+	find ItemFlow(flow, _);
+	InformationFlow.realizingActivityEdge(flow, edge);
+	ObjectFlow.source(edge, source);
+	OutputPin.type(source, conveyed);
+} or {
+	find ItemFlow(flow, _);
+	InformationFlow.realizingActivityEdge(flow, edge);
+	ObjectFlow.target(edge, target);
+	InputPin.type(target, conveyed);
+} or {
+	find ItemFlow(flow, _);
+	InformationFlow.realizingMessage(flow, message);
+	Message.signature(message, conveyed);
+} or {
+	find IFExtension_realizingTransition(flow, transition);
+	Transition.trigger(transition, trigger);
+	Trigger.event(trigger, event);
+	SignalEvent.signal(event, conveyed);
+}
+
+// --- IsBlockRule ---
+
+pattern isBlocklike(owner : Class) {
+	find Block(owner, _);
+} or {
+	find Domain(owner, _);
+} or {
+	find External(owner, _);
+} or {
+	find System(owner, _);
+} or {
+	find Subsystem(owner, _);
+} or {
+	find Systemcontext(owner, _);
+}
+
+// --- LifelineType ---
+
+pattern lifelineType(lifeline : Lifeline, type : Class) {
+	// Lifeline.type
+	Lifeline.represents(lifeline, represents);
+	ConnectableElement.type(represents, type);
+}
+
+// --- NonSignalTypedElementRule ---
+
+pattern elementWithoutSignalType(element : TypedElement) {
+	find isAppliedForTypedElementType(element);
+	neg find elementWithSignalType(element);
+	neg find typeIsVerdictKind(element);
+}
+
+/* private */ pattern elementWithSignalType(element : TypedElement) {
+	find isAppliedForTypedElementType(element);
+	TypedElement.type(element, signal);
+	Signal(signal);
+}
+
+/* private */ pattern typeIsVerdictKind(element : TypedElement) {
+	find isAppliedForTypedElementType(element);
+	TypedElement.type(element, type);
+	find isVerdictKind(type);
+}
+
+/* private */ pattern isAppliedForTypedElementType(element: TypedElement){
+	ActivityParameterNode(element);
+} or {
+	DataStoreNode(element);
+} or {
+	CentralBufferNode(element);
+} or {
+	find FlowProperty(element, _);
+	Property(element);
+}
+
+// --- TypedElementRule ---
+
+pattern typedElementWithoutType(element : TypedElement) {
+	find isAppliedForTypedElement(element);
+	neg TypedElement.type(element, _);
+}
+
+/* private */ pattern isAppliedForTypedElement(element : TypedElement) {
+	find ValueProperty(element, _);
+	Property(element);
+} or {
+	find PartProperty(element, _);
+	Property(element);
+} or {
+	Parameter(element);
+}
+
+// --- UnnamedElementRule ---
+
+pattern unnamedElement(element : NamedElement) {
+	find isAppliedForNamedElementType(element);
+	NamedElement.name(element, "");
+}
+
+/* private */ pattern isAppliedForNamedElementType(element : NamedElement) {
+	DecisionNode(element);
+} or {
+	Activity(element);
+} or {
+	Actor(element);
+} or {
+	find Block(element, _);
+	Class(element);
+} or {
+	Operation(element);
+} or {
+	Package(element);
+} or {
+	Signal(element);
+} or {
+	UseCase(element);
+} or {
+	find ValueProperty(element, _);
+	Property(element);
+} or {
+	State(element);
+} or {
+	Region(element);
+}
+
+// --- VerdictKindHelper ---
+
+pattern isVerdictKind(enum: Enumeration){
+	Enumeration.name(enum, "VerdictKind");
+	find ValueType(enum, _);
+	find isInSysmlRequirements(enum);
+	find hasCorrectEnumLiterals(enum);
+}
+
+/* private */ pattern isInSysmlRequirements(enum: Enumeration){
+	Enumeration.owningPackage(enum, requirementsPkg);
+	Package.name(requirementsPkg, "Requirements");
+	Package.owningPackage(requirementsPkg, sysmlPkg);
+	Profile.name(sysmlPkg, "SysML");
+}
+
+/* private */ pattern hasCorrectEnumLiterals(enum: Enumeration){
+	4 == count Enumeration.ownedLiteral(enum, _);
+	find hasLiteralWithName(enum, "pass");
+	find hasLiteralWithName(enum, "fail");
+	find hasLiteralWithName(enum, "inconclusive");
+	find hasLiteralWithName(enum, "error");
+}
+
+/* private */ pattern hasLiteralWithName(enum: Enumeration, name: java String){
+	Enumeration.ownedLiteral(enum, literal);
+	EnumerationLiteral.name(literal, name);
+}
