@@ -1,0 +1,213 @@
+package vql.saic.group.interfaceintegrity;
+
+import vql.saic.helper.shared.isVerdictKind;
+import vql.saic.helper.shared.isBlocklike;
+import vql.saic.helper.profile.saic.logical;
+import vql.saic.helper.profile.saic.physical;
+
+import sysml.BindingConnector;
+import sysml.ProxyPort;
+import sysml.FlowProperty_direction;
+import sysml.InterfaceBlock;
+import sysml.FlowProperty;
+import sysml.BindingConnector;
+import sysml.ConstraintParameter;
+
+import util.indirectGeneralization;
+
+// --- ConnectorEndRule ---
+
+@Constraint(key = {connector})
+pattern connectorEndIsNotProxyPort(connector: Connector){
+	neg find BindingConnector(connector, _);
+	Connector.end(connector, end);
+	ConnectorEnd.role(end, role);
+	neg find ProxyPort(role, _);
+}
+
+// --- FlowDirectionRule ---
+
+@Constraint(key = {property})
+pattern inDirectionIsNotAllowed(property: Property){
+	find FlowProperty_direction(property, direction);
+	EnumerationLiteral.name(direction, "in");
+}
+
+// --- IBDOwnerRule ---
+
+@Constraint(key = {diagram})
+pattern ibdIsNotOwnedByABlock(diagram: Diagram){
+	Diagram._representation(diagram, representation);
+	AbstractDiagramRepresentationObject.type(representation, "SysML Internal Block Diagram");
+	Diagram.ownerOfDiagram(diagram, owner);
+	neg find isBlocklike(owner);
+}
+
+// --- InterfaceBlockNotSpecBlockRule ---
+
+@Constraint(key = {block})
+pattern interfaceBlockSpecializesNonInterfaceBlock(block: Class){
+	find InterfaceBlock(block, _);
+	find hasNonInterfaceBlockInMoreGeneral(block);
+}
+
+private pattern hasNonInterfaceBlockInMoreGeneral(specific : Classifier) {
+	find indirectGeneralization(specific, general);
+	neg find InterfaceBlock(general, _);
+}
+
+// --- InterfaceBlockRule ---
+
+@Constraint(key = {block})
+pattern interfaceBlockDoesNotOwnFlow(block: Class){
+	find InterfaceBlock(block, _);
+	neg find ownsFlowProperty(block);
+	neg find ownsProxyPort(block);
+}
+
+/* private */ pattern ownsFlowProperty(cls: Class){
+	Class.ownedAttribute(cls, flow);
+	find FlowProperty(flow, _);
+}
+
+/* private */ pattern ownsProxyPort(cls: Class){
+	Class.ownedAttribute(cls, proxyPort);
+	find ProxyPort(proxyPort, _);
+}
+
+// --- InterfaceNeededRule ---
+
+@Constraint(key = {flow})
+pattern ownersOfTheEndOfThisObjectFlowAreDifferent(flow: ObjectFlow){
+ 	neg find objectFlowRealizedFlows(flow, _);
+ 	neg find sourceOfObjectFlowIsDecisionOrForkOrJoinOrMerge(flow);
+ 	find sourceAndTargetOperationOwnersAreDifferent(flow);
+ 	neg find targetIsVerdictKind(flow);
+}
+
+/* private */ pattern objectFlowRealizedFlows(objectFlow: ObjectFlow, informationFlow: InformationFlow){
+	// ObjectFlow.realizedFlows
+	InformationFlow.realizingActivityEdge(informationFlow, objectFlow);
+}
+
+/* private */ pattern targetIsVerdictKind(objectFlow: ObjectFlow){
+	ObjectFlow.target(objectFlow, target);
+	ActivityParameterNode.type(target, type);
+	find isVerdictKind(type);
+}
+
+/* private */ pattern sourceOfObjectFlowIsDecisionOrForkOrJoinOrMerge(objectFlow: ObjectFlow){
+	ObjectFlow.source(objectFlow, source);
+	DecisionNode(source);
+} or {
+	ObjectFlow.source(objectFlow, source);
+	ForkNode(source);
+} or {
+	ObjectFlow.source(objectFlow, source);
+	JoinNode(source);
+} or {
+	ObjectFlow.source(objectFlow, source);
+	MergeNode(source);
+}
+
+/* private */ pattern sourceAndTargetOperationOwnersAreDifferent(objectFlow: ObjectFlow){
+	find sourceOperationOwner(objectFlow, owner);
+	find targetOperationOwner(objectFlow, owner2);
+	owner != owner2;
+}
+
+/* private */ pattern sourceOperationOwner(objectFlow: ObjectFlow, owner: Classifier){
+	ObjectFlow.source(objectFlow, source);
+	CallAction.result(pinOwner, source);
+	find coaOperationOwner(pinOwner, owner);
+}
+
+/* private */ pattern targetOperationOwner(objectFlow: ObjectFlow, owner: Classifier){
+	ObjectFlow.target(objectFlow, target);
+	InvocationAction.argument(pinOwner, target);
+	find coaOperationOwner(pinOwner, owner);
+}
+
+/* private */ pattern coaOperationOwner(operationAction: CallOperationAction, owner: Classifier){
+	CallOperationAction.operation(operationAction, operation);
+	find operationOwner(operation, owner);
+}
+
+/* private */ pattern operationOwner(operation: Operation, owner: Classifier){
+	Class.ownedOperation(owner, operation);
+} or { 
+	DataType.ownedOperation(owner, operation);
+} or { 
+	Interface.ownedOperation(owner, operation);
+} or { 
+	Artifact.ownedOperation(owner, operation);
+}
+
+// --- LogicalConnflowsRule ---
+
+@Constraint(key = {connector})
+pattern connectorInLogicalArchitectureWithoutFlow(connector: Connector){
+	neg InformationFlow.realizingConnector(_, connector);
+	neg find BindingConnector(connector, _);
+	
+	find logical(owner, _);
+	Class.ownedConnector(owner, connector);
+}
+
+// --- LogicalPortRule ---
+
+@Constraint(key = {proxyPort})
+pattern logicalProxyPortWithoutLogicalInterfaceBlock(proxyPort: Port){
+	find proxyPortOwnedByLogicalBlock(proxyPort);
+	Port.type(proxyPort, type);
+	find InterfaceBlock(type, _);
+	neg find logical(type, _);
+} or {
+	find proxyPortOwnedByLogicalBlock(proxyPort);
+	neg Port.type(proxyPort, _);
+}
+
+/* private */ pattern proxyPortOwnedByLogicalBlock(proxyPort: Port){
+	find ProxyPort(proxyPort, _);
+	Class.ownedAttribute(owner, proxyPort);
+	find logical(owner, _);
+}
+
+// --- PhysicalPortRule ---
+
+@Constraint(key = {proxyPort})
+pattern physicalProxyPortWithoutPhysicalInterfaceBlock(proxyPort: Port){
+	find proxyPortOwnedByPhysicalBlock(proxyPort);
+	Port.type(proxyPort, type);
+	find InterfaceBlock(type, _);
+	neg find physical(type, _);
+} or {
+	find proxyPortOwnedByPhysicalBlock(proxyPort);
+	neg Port.type(proxyPort, _);
+}
+
+/* private */ pattern proxyPortOwnedByPhysicalBlock(proxyPort: Port){
+	find ProxyPort(proxyPort, _);
+	Class.ownedAttribute(owner, proxyPort);
+	find physical(owner, _);
+}
+
+// --- ProxyPortRule ---
+
+@Constraint(key = {port})
+pattern portWithoutProxyPortAndConstraintParameterStereotype(port: Port){
+	neg find ProxyPort(port, _);
+	neg find ConstraintParameter(port, _);
+}
+
+// --- ProxyPortTypeRule ---
+
+@Constraint(key = {port})
+pattern proxyPortWithoutInterfaceBlockType(port: Port){
+	find ProxyPort(port, _);
+	Port.type(port, type);
+	neg find InterfaceBlock(type, _);
+} or {
+	find ProxyPort(port, _);
+	neg Port.type(port, _);
+}

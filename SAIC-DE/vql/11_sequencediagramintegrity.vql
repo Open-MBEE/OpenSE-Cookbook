@@ -1,0 +1,52 @@
+package vql.saic.group.sequencediagramintegrity;
+
+import vql.saic.helper.profile.saic.physical;
+import vql.saic.helper.profile.saic.logical;
+import vql.saic.helper.shared.isBlocklike;
+import vql.saic.helper.shared.lifelineType;
+
+// --- LifelinetypeRule ---
+
+@Constraint(key = {lifeline})
+pattern lifelineIsNotTypedByBlock(lifeline: Lifeline){
+	find lifelineType(lifeline, type);
+	neg find isBlocklike(type);
+} or {
+	neg find lifelineType(lifeline, _);
+}
+
+// --- MessageSignatureRule ---
+
+@Constraint(key = {message})
+pattern messageWithoutSignature(message: Message){
+	neg Message.signature(message, _);
+}
+
+// --- MessageflowNeededRule ---
+
+@Constraint(key = {message})
+pattern messageWithoutRealizingInformationFlow(message: Message){
+	Message.signature(message, signal);
+	Signal(signal);
+	neg InformationFlow.realizingMessage(_, message);
+}
+
+// --- SequencelevelRule ---
+
+@Constraint(key = {interaction})
+pattern interactionMixesPhysicalAndLogicalLifelines(interaction: Interaction){
+	Interaction.lifeline(interaction, lifelineOne);
+	Interaction.lifeline(interaction, lifelineTwo);
+	find lifelineWithPhysicalType(lifelineOne);
+	find lifelineWithLogicalType(lifelineTwo);
+}
+
+private pattern lifelineWithPhysicalType(lifeline: Lifeline){
+	find lifelineType(lifeline, type);
+	find physical(type, _);
+}
+
+private pattern lifelineWithLogicalType(lifeline: Lifeline){
+	find lifelineType(lifeline, type);
+	find logical(type, _);
+}

@@ -1,0 +1,51 @@
+package vql.saic.helper.profile.saic;
+
+pattern sourcecontent(element : Artifact, domainStereotypeInstance : InstanceSpecification){
+	find util.stereotypedElement(element, domainStereotypeInstance, "SAIC DE Profile", "source content");
+}
+
+pattern flowset(element : InformationFlow, domainStereotypeInstance : InstanceSpecification){
+	find util.stereotypedElement(element, domainStereotypeInstance, "SAIC DE Profile", "flow set");
+}
+
+pattern flowset_individualFlows(element : InformationFlow, value : Element){
+	find flowset(element, domainStereotypeInstance);
+	find util.slotValue(domainStereotypeInstance, "individualFlows", valuespec);
+	ElementValue.element(valuespec, value);
+}
+
+pattern IFExtension(element : InformationFlow, domainStereotypeInstance : InstanceSpecification){
+	find util.stereotypedElement(element, domainStereotypeInstance, "SAIC DE Profile", "IFExtension");
+}
+
+pattern IFExtension_realizingTransition(element : InformationFlow, value : Transition){
+	find IFExtension(element, domainStereotypeInstance);
+	find util.slotValue(domainStereotypeInstance, "realizingTransition", valuespec);
+	ElementValue.element(valuespec, value);
+}
+
+pattern logical(element : Class, domainStereotypeInstance : InstanceSpecification){
+	find util.stereotypedElement(element, domainStereotypeInstance, "SAIC DE Profile", "logical");
+}
+
+pattern physical(element : Class, domainStereotypeInstance : InstanceSpecification){
+	find util.stereotypedElement(element, domainStereotypeInstance, "SAIC DE Profile", "physical");
+}
+
+pattern logical_atomic(element : Class, valuespec : LiteralBoolean){
+	find logical(element, domainStereotypeInstance);
+	find util.slotValue(domainStereotypeInstance, "atomic", valuespec);
+}
+
+pattern context(element : Class, domainStereotypeInstance : InstanceSpecification){
+	find util.stereotypedElement(element, domainStereotypeInstance, "SAIC DE Profile", "context");
+}
+
+pattern physical_atomic(element : Class, valuespec : LiteralBoolean){
+	find physical(element, domainStereotypeInstance);
+	find util.slotValue(domainStereotypeInstance, "atomic", valuespec);
+}
+
+pattern software(element : Class, domainStereotypeInstance : InstanceSpecification){
+	find util.stereotypedElement(element, domainStereotypeInstance, "SAIC DE Profile", "software");
+}

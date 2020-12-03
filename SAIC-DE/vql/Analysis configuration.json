@@ -1,0 +1,738 @@
+{
+  "configurationId": "vql.saic",
+  "name": "VQL implementation of SAIC Validation Rules",
+  "configurationRules": [
+    {
+      "name": "ACCEPTEVENTOUTPUT",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.actionWithNonTimeEventTriggerWithoutOutputPin",
+      "severity": "ERROR",
+      "messageTemplate": "Accept Events must own an output pin. If you are modeling a signal that triggers a state transition, associate the object flow with an item flow and realize the transition."
+    },
+    {
+      "name": "ACTORNAME",
+      "queryFqn": "vql.saic.group.completeness.actorWithoutName",
+      "severity": "ERROR",
+      "messageTemplate": "All Actors must have names."
+    },
+    {
+      "name": "ALLOCATIONPROHIBIT",
+      "queryFqn": "vql.saic.group.forbiddenelements.allocationExists",
+      "severity": "ERROR",
+      "messageTemplate": "Allocations are prohibited; use realization (between levels of abstraction) or satisfy (between requirements and other model elements)."
+    },
+    {
+      "name": "DATASTORETYPE",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.dataStoreWithoutSignalType",
+      "severity": "ERROR",
+      "messageTemplate": "Data stores must be typed by signals."
+    },
+    {
+      "name": "CALLOPERATIONOPERATION",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.callOperationWithoutOperation",
+      "severity": "ERROR",
+      "messageTemplate": "Call operation actions must have the called operation specified."
+    },
+    {
+      "name": "UCASSOCIATION",
+      "queryFqn": "vql.saic.group.usecaseintegrity.associationBetweenTwoUseCases",
+      "severity": "ERROR",
+      "messageTemplate": "Use cases may not be associated with other use cases."
+    },
+    {
+      "name": "OBJFLOWSOURCE",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.objectFlowHasIncorrectSource",
+      "severity": "ERROR",
+      "messageTemplate": "Object flows must have pins as their source (not call operations or call behaviors)."
+    },
+    {
+      "name": "ACTORUSECASE",
+      "queryFqn": "vql.saic.group.usecaseintegrity.actorIsWrong",
+      "severity": "ERROR",
+      "messageTemplate": "All use case elements must be associated with at least one use case or be specialized by other actors."
+    },
+    {
+      "name": "LOGICALPHYSICAL",
+      "queryFqn": "vql.saic.group.structuralintegrity.logicalAndPhysicalBlock",
+      "severity": "ERROR",
+      "messageTemplate": "Blocks cannot have both logical and physical stereotypes applied."
+    },
+    {
+      "name": "ACTORDOCUMENTATION",
+      "queryFqn": "vql.saic.group.completeness.actorWithoutDocumentation",
+      "severity": "ERROR",
+      "messageTemplate": "All Actors must have documentation."
+    },
+    {
+      "name": "SUBMACHINECONNECTIONS",
+      "queryFqn": "vql.saic.group.statemachineintegrity.connectionPointDoesNotRepresentEntryOrExitpoint",
+      "severity": "ERROR",
+      "messageTemplate": "States that are submachines must have all entry and exit points associated with connection points."
+    },
+    {
+      "name": "ACTIVITYACTIONSTM",
+      "queryFqn": "vql.saic.group.statemachineintegrity.activityWithoutAction",
+      "severity": "ERROR",
+      "messageTemplate": "All activities owned by state machines must have at least one action node."
+    },
+    {
+      "name": "FLOWTYPE",
+      "queryFqn": "vql.saic.group.flowintegrity.flowPropertyWithoutSignalType",
+      "severity": "ERROR",
+      "messageTemplate": "All flow properties must be typed by signals."
+    },
+    {
+      "name": "TRANSITIONCHOICE",
+      "queryFqn": "vql.saic.group.statemachineintegrity.transitionFromChoiceWihoutGuard",
+      "severity": "ERROR",
+      "messageTemplate": "All transitions exiting a choice must have guards defined."
+    },
+    {
+      "name": "LOGTERMPARTS",
+      "queryFqn": "vql.saic.group.structuralintegrity.atomicLogicalBlockOwnsPartProperty",
+      "severity": "ERROR",
+      "messageTemplate": "Logical blocks with ATOMIC = TRUE may not own part properties."
+    },
+    {
+      "name": "ACTIVITYOWNS",
+      "queryFqn": "vql.saic.group.completeness.nonLeafActivityWithoutDiagramOrOperation",
+      "severity": "ERROR",
+      "messageTemplate": "Activities must own at least one diagram or operation. If it will not be further decomposed, set its \"Leaf\" attribue to true."
+    },
+    {
+      "name": "PROXYPORTTYPE",
+      "queryFqn": "vql.saic.group.interfaceintegrity.proxyPortWithoutInterfaceBlockType",
+      "severity": "ERROR",
+      "messageTemplate": "Proxy ports must be typed by interface blocks."
+    },
+    {
+      "name": "REQUIREMENTVERIFY",
+      "queryFqn": "vql.saic.group.requirements.requirementWithoutVerify",
+      "severity": "INFO",
+      "messageTemplate": "This requirement does not have at least one verify relationship.  (Requirements that have blank text are exempted from this rule)."
+    },
+    {
+      "name": "CONTROLNODEOUTGOING",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.controlNodeWithoutAtLeastTwoOutgoingFlows",
+      "severity": "ERROR",
+      "messageTemplate": "Forks and decisions must have at least two outgoing flows."
+    },
+    {
+      "name": "CONTROLNODEINCOMING",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.controlNodeWithoutAtLeastTwoIncomingFlows",
+      "severity": "ERROR",
+      "messageTemplate": "Joins and merges must have at least two incoming flows."
+    },
+    {
+      "name": "CONTEXTPARTS",
+      "queryFqn": "vql.saic.group.systemcontextintegrity.systemContextWithoutPartProperty",
+      "severity": "ERROR",
+      "messageTemplate": "System context blocks must own at least one part property."
+    },
+    {
+      "name": "MESSAGEFLOWNEEDED",
+      "queryFqn": "vql.saic.group.sequencediagramintegrity.messageWithoutRealizingInformationFlow",
+      "severity": "INFO",
+      "messageTemplate": "This message signature is a signal and is not realized by any item flows or flow sets."
+    },
+    {
+      "name": "CONTEXTREALIZATION",
+      "queryFqn": "vql.saic.group.systemcontextintegrity.partPropertyDoesNotRealizeAnyActor",
+      "severity": "ERROR",
+      "messageTemplate": "All part properties owned by system context blocks must realize one or more use case elements."
+    },
+    {
+      "name": "VALUETYPE",
+      "queryFqn": "vql.saic.group.completeness.valuePropertyWithoutType",
+      "severity": "ERROR",
+      "messageTemplate": "Value properties must be typed by value types."
+    },
+    {
+      "name": "REFPROPPROHIBIT",
+      "queryFqn": "vql.saic.group.forbiddenelements.refproExists",
+      "severity": "ERROR",
+      "messageTemplate": "Reference properties are prohibited.  These may be represented as part properties at a higher level in the system model structure."
+    },
+    {
+      "name": "OBJECTFLOWENDS",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.objectFlowDirectlyConnectedWithAction",
+      "severity": "ERROR",
+      "messageTemplate": "Object flows must have input/output pins as their source/target (no direct connection with send or accept events)."
+    },
+    {
+      "name": "OPDOCUMENTATION",
+      "queryFqn": "vql.saic.group.completeness.operationWithoutDocumentation",
+      "severity": "ERROR",
+      "messageTemplate": "All operations must have documentation."
+    },
+    {
+      "name": "REQEXTEND",
+      "queryFqn": "vql.saic.group.forbiddenelements.nonExtendedRequirement",
+      "severity": "ERROR",
+      "messageTemplate": "Non-extended requirements are forbidden."
+    },
+    {
+      "name": "ACCEPTOUTGOING",
+      "queryFqn": "vql.saic.group.flowintegrity.signalIsNotConveyedByItemFlowOrFlowset",
+      "severity": "ERROR",
+      "messageTemplate": "If an Accept Event outgoing object flow is realized by an item flow or flow set, the signal that triggers the accept event must be conveyed by the item flows or flow set."
+    },
+    {
+      "name": "ACTPARTYPE",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.actpartypeWithoutSignalType",
+      "severity": "ERROR",
+      "messageTemplate": "All activity parameter nodes must be typed by signals."
+    },
+    {
+      "name": "CONVEYTYPE",
+      "queryFqn": "vql.saic.group.flowintegrity.conveyedFlowWithoutSignal",
+      "severity": "ERROR",
+      "messageTemplate": "Item flows may only convey signals."
+    },
+    {
+      "name": "ACTIVITYPARAMETERSTM",
+      "queryFqn": "vql.saic.group.statemachineintegrity.activityWithParameter",
+      "severity": "ERROR",
+      "messageTemplate": "State Machine Entry, Do, Exit, and Transition activities may not have parameters."
+    },
+    {
+      "name": "INPINSCONN",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.inputPinWithoutIncomingFlow",
+      "severity": "ERROR",
+      "messageTemplate": "Input pins must have an incoming object flow (target pins are exempt from this rule)."
+    },
+    {
+      "name": "PARTIB",
+      "queryFqn": "vql.saic.group.structuralintegrity.partPropertyTypedByIntefaceBlock",
+      "severity": "ERROR",
+      "messageTemplate": "Part properties may not be typed by Interface blocks."
+    },
+    {
+      "name": "IBNOTSPECBLOCK",
+      "queryFqn": "vql.saic.group.interfaceintegrity.interfaceBlockSpecializesNonInterfaceBlock",
+      "severity": "ERROR",
+      "messageTemplate": "Interface blocks may not specialize non-interface blocks."
+    },
+    {
+      "name": "SENDINCOMING",
+      "queryFqn": "vql.saic.group.flowintegrity.sendSignalIsNotConveyedByItemFlowOrFlowset",
+      "severity": "ERROR",
+      "messageTemplate": "If incoming object flows to a Send Signal event are realized by an item flow or flow set, the signal of the event must be conveyed by the item flows or flow set."
+    },
+    {
+      "name": "STMINTEGRITY",
+      "queryFqn": "vql.saic.group.statemachineintegrity.stateMachineCallsOperationOutsideStructuralDecomposition",
+      "severity": "ERROR",
+      "messageTemplate": "State machines may only call operations owned within their owning block's structural decomposition (owned by blocks typing its parts)."
+    },
+    {
+      "name": "MESSAGEFLOWS",
+      "queryFqn": "vql.saic.group.flowintegrity.itemFlowOrFlowSetDoesNotConveyMessageSignature",
+      "severity": "ERROR",
+      "messageTemplate": "If a message is associated with item flows or flow sets, they must convey its signature signal."
+    },
+    {
+      "name": "OUTPINSCONN",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.outputPinWithoutOutgoingFlow",
+      "severity": "ERROR",
+      "messageTemplate": "Output pins must have an outgoing object flow"
+    },
+    {
+      "name": "LOGICALARCH",
+      "queryFqn": "vql.saic.group.structuralintegrity.logicalPropertyTypedByNonLogicalBlock",
+      "severity": "ERROR",
+      "messageTemplate": "Part properties that are owned by a block with a logical stereotype must be typed by a block with a logical stereotype."
+    },
+    {
+      "name": "ACCEPTEVENTTIMEEVENTTRIGGER",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.acceptEventWithFaultyTimeTrigger",
+      "severity": "ERROR",
+      "messageTemplate": "Accept events triggered by time events must have WHEN defined."
+    },
+    {
+      "name": "ACTREALIZATION",
+      "queryFqn": "vql.saic.group.systemcontextintegrity.actorIsNotRealizedByPartOrValueProperty",
+      "severity": "ERROR",
+      "messageTemplate": "All Actors and other use case elements must be realized by at least one part property in the structure tree of a system context block.  Environmental effects may be realized by value properties in the structure tree of a system context block."
+    },
+    {
+      "name": "ACTORASSOCIATIONS",
+      "queryFqn": "vql.saic.group.usecaseintegrity.actorIsNotAssociatedWithAnyUseCase",
+      "severity": "ERROR",
+      "messageTemplate": "All Actors and other use case elements must be associated with at least one use case."
+    },
+    {
+      "name": "USECASENAME",
+      "queryFqn": "vql.saic.group.completeness.useCaseWithoutName",
+      "severity": "ERROR",
+      "messageTemplate": "Use Cases must be named."
+    },
+    {
+      "name": "PHYSICALARCH",
+      "queryFqn": "vql.saic.group.structuralintegrity.physicalPropertyTypedByNonPhysicalBlock",
+      "severity": "ERROR",
+      "messageTemplate": "Part properties that are owned by a block with a physical stereotype must be typed by a block with a physical stereotype."
+    },
+    {
+      "name": "OBJECTFLOWCOMPAT",
+      "queryFqn": "vql.saic.group.flowintegrity.sourceSignalIsNotConveyedByItemFlowOrFlowSet",
+      "severity": "ERROR",
+      "messageTemplate": "If an object flow is realized by an item flow or flow set, those flows must convey the signal typing its source."
+    },
+    {
+      "name": "VALUENAME",
+      "queryFqn": "vql.saic.group.completeness.valuePropertyWithoutName",
+      "severity": "ERROR",
+      "messageTemplate": "Value properties must be named."
+    },
+    {
+      "name": "PARTLOOP",
+      "queryFqn": "vql.saic.group.structuralintegrity.thereIsAPartPropertyLoop",
+      "severity": "ERROR",
+      "messageTemplate": "There is a part property loop associated with this block (a block in the structure owns a part property typed by a block \"upstream,\" leading to recursion in the structure tree."
+    },
+    {
+      "name": "ACTIVITYDOCUMENTATION",
+      "queryFqn": "vql.saic.group.completeness.activityWithoutDocumentation",
+      "severity": "ERROR",
+      "messageTemplate": "All activities must have documentation."
+    },
+    {
+      "name": "PARTTYPE",
+      "queryFqn": "vql.saic.group.structuralintegrity.partPropertyWithoutType",
+      "severity": "ERROR",
+      "messageTemplate": "All part properties must be typed."
+    },
+    {
+      "name": "ACTIVITYEDGEGUARD",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.flowExitingDecisionNodeWithoutGuard",
+      "severity": "ERROR",
+      "messageTemplate": "All control and object flows exiting a decision node must have guards defined."
+    },
+    {
+      "name": "SIGNALEVENTSIGNAL",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.signalEventWithoutSignal",
+      "severity": "ERROR",
+      "messageTemplate": "Signal Events must have a signal defined."
+    },
+    {
+      "name": "SENDSIGNALPIN",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.sendSignalWithoutInputPin",
+      "severity": "ERROR",
+      "messageTemplate": "Send signal actions must have at least one input pin."
+    },
+    {
+      "name": "ACCEPTEVENTPORTMATCH",
+      "queryFqn": "vql.saic.group.flowintegrity.acceptEventPortDoesNotMatchSourcePort",
+      "severity": "ERROR",
+      "messageTemplate": "The assigned and inferred ports (via item flow realization) must match."
+    },
+    {
+      "name": "BLOCKNAME",
+      "queryFqn": "vql.saic.group.completeness.blockWithoutName",
+      "severity": "ERROR",
+      "messageTemplate": "Blocks must be named."
+    },
+    {
+      "name": "BUFFERFLOW",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.bufferflowWithoutOF",
+      "severity": "ERROR",
+      "messageTemplate": "Buffers and data stores must have at least one object flow (incoming or outgoing)."
+    },
+    {
+      "name": "UCDOCUMENTATION",
+      "queryFqn": "vql.saic.group.completeness.useCaseWithoutDocumentation",
+      "severity": "ERROR",
+      "messageTemplate": "All use cases must have documentation."
+    },
+    {
+      "name": "STATEMACHINEOPERATIONS",
+      "queryFqn": "vql.saic.group.statemachineintegrity.operationIsOwnedByStatemachine",
+      "severity": "ERROR",
+      "messageTemplate": "State machines may not own operations in their structure (move operation to a block or activity)."
+    },
+    {
+      "name": "ACTIVITYEDGEMISMATCH",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.controlNodeEdgeMismatch",
+      "severity": "ERROR",
+      "messageTemplate": "Flows into and out of a control node (join, fork, merge, or decision) must be of the same type (object or control)."
+    },
+    {
+      "name": "DECISIONNODENAME",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.decisionNodeWithoutName",
+      "severity": "ERROR",
+      "messageTemplate": "Decision nodes must have a name (this is used to specify the decision)."
+    },
+    {
+      "name": "OPERATIONNAME",
+      "queryFqn": "vql.saic.group.completeness.operationWithoutName",
+      "severity": "ERROR",
+      "messageTemplate": "Operations must be named."
+    },
+    {
+      "name": "SENDSIGNALPORTMATCH",
+      "queryFqn": "vql.saic.group.flowintegrity.sendSignalPortDoesNotMatchTargetPort",
+      "severity": "ERROR",
+      "messageTemplate": "The assigned and inferred ports (via item flow realization) must match."
+    },
+    {
+      "name": "NOATTACHMENT",
+      "queryFqn": "vql.saic.group.forbiddenelements.attachmentRefersFile",
+      "severity": "ERROR",
+      "messageTemplate": "Embedding files in the model is not allowed.  Use a hyperlink to an authoritative source instead (use an artifact if necessary to represent the embedded file)."
+    },
+    {
+      "name": "STATEOWNER",
+      "queryFqn": "vql.saic.group.statemachineintegrity.stateMachineIsNotOwnedByBlock",
+      "severity": "ERROR",
+      "messageTemplate": "State machines must be owned by blocks."
+    },
+    {
+      "name": "INTBLOCKFLOW",
+      "queryFqn": "vql.saic.group.interfaceintegrity.interfaceBlockDoesNotOwnFlow",
+      "severity": "ERROR",
+      "messageTemplate": "Interface blocks must own at least one flow property or port."
+    },
+    {
+      "name": "SIGNALNAME",
+      "queryFqn": "vql.saic.group.completeness.signalWithoutName",
+      "severity": "ERROR",
+      "messageTemplate": "All signals must be named."
+    },
+    {
+      "name": "CALLBEHAVIORSELF",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.callBehaviorActionCallsActivityWhichOwnsIt",
+      "severity": "ERROR",
+      "messageTemplate": "Call behavior actions may not call the activity that owns them."
+    },
+    {
+      "name": "SWIMLANEPROHIBIT",
+      "queryFqn": "vql.saic.group.forbiddenelements.swimlaneExists",
+      "severity": "ERROR",
+      "messageTemplate": "Swimlanes are prohibited; see customizations for operations and flows that can display part-level ownership if operations are owned by blocks.  Dynamic legends may also provide similar functionality to swimlanes in a more compact representation."
+    },
+    {
+      "name": "TRANSITIONTRIGGER",
+      "queryFqn": "vql.saic.group.statemachineintegrity.transitionWithoutTrigger",
+      "severity": "ERROR",
+      "messageTemplate": "All transitions (except those exiting connection points or pseudostates) must have triggers."
+    },
+    {
+      "name": "STATENAME",
+      "queryFqn": "vql.saic.group.completeness.stateWithEmptyName",
+      "severity": "ERROR",
+      "messageTemplate": "States must be named."
+    },
+    {
+      "name": "FLOWFINALINCOMING",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.flowFinalNodeWithoutIncomingFlow",
+      "severity": "ERROR",
+      "messageTemplate": "All flow final nodes must have one incoming flow."
+    },
+    {
+      "name": "ACTIVITYNAME",
+      "queryFqn": "vql.saic.group.completeness.activityWithoutName",
+      "severity": "ERROR",
+      "messageTemplate": "Activities must be named."
+    },
+    {
+      "name": "CONNECTOREND",
+      "queryFqn": "vql.saic.group.interfaceintegrity.connectorEndIsNotProxyPort",
+      "severity": "ERROR",
+      "messageTemplate": "Connector ends must be proxy ports."
+    },
+    {
+      "name": "PHYSICALPORT",
+      "queryFqn": "vql.saic.group.interfaceintegrity.physicalProxyPortWithoutPhysicalInterfaceBlock",
+      "severity": "ERROR",
+      "messageTemplate": "All proxy ports owned by blocks with the <<physical>> stereotype applied must by typed by interface blocks that have the <<physical>> stereotype applied."
+    },
+    {
+      "name": "FLOWDIRECTION",
+      "queryFqn": "vql.saic.group.interfaceintegrity.inDirectionIsNotAllowed",
+      "severity": "ERROR",
+      "messageTemplate": "All flow properties must be out or inout; this ensures consistent conjugation (all 1-way in flows are conjugated)."
+    },
+    {
+      "name": "INTERFACENEEDED",
+      "queryFqn": "vql.saic.group.interfaceintegrity.ownersOfTheEndOfThisObjectFlowAreDifferent",
+      "severity": "INFO",
+      "messageTemplate": "The owners of the ends of this object flow are different and it is not realized by an item flow."
+    },
+    {
+      "name": "FLOWSETENDS",
+      "queryFqn": "vql.saic.group.flowintegrity.flowSetSourceOrTargetIsNotRealizedByIndividualFlow",
+      "severity": "ERROR",
+      "messageTemplate": "If a flow set has individual flows assigned, the individual flows must connect the source and target of the flow set."
+    },
+    {
+      "name": "LOGICALCONNFLOWS",
+      "queryFqn": "vql.saic.group.interfaceintegrity.connectorInLogicalArchitectureWithoutFlow",
+      "severity": "INFO",
+      "messageTemplate": "All connectors that connect ports in the logical architecture must have at least one flow."
+    },
+    {
+      "name": "ITEMFLOWCONVEYED",
+      "queryFqn": "vql.saic.group.flowintegrity.itemFlowWithoutSignalOrFlowSet",
+      "severity": "ERROR",
+      "messageTemplate": "All item flows must convey one or more signals or be part of a flow set."
+    },
+    {
+      "name": "PACKAGENAME",
+      "queryFqn": "vql.saic.group.completeness.packageWithoutName",
+      "severity": "ERROR",
+      "messageTemplate": "Packages must be named."
+    },
+    {
+      "name": "ACTIVITYPARAMETERFLOW",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.activityParamNodeWithoutOF",
+      "severity": "ERROR",
+      "messageTemplate": "All activity parameter nodes must have incoming or outgoing object flows."
+    },
+    {
+      "name": "ACCEPTEVENTMATCH",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.acceptEventTriggerSignalDoesNotMatchOutputPinSignal",
+      "severity": "ERROR",
+      "messageTemplate": "The signal triggering an accept event action must match the signal typing its output pin."
+    },
+    {
+      "name": "PARATYPE",
+      "queryFqn": "vql.saic.group.completeness.operationParameterWithoutType",
+      "severity": "ERROR",
+      "messageTemplate": "All parameters owned by operations must be typed."
+    },
+    {
+      "name": "CALLBEHAVIORBEHAVIOR",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.callBehaviorWithoutBehavior",
+      "severity": "ERROR",
+      "messageTemplate": "Call behavior actions must have the called behavior specified."
+    },
+    {
+      "name": "CONSTRAINTSPECIFICATION",
+      "queryFqn": "vql.saic.group.parametricelementintegrity.constraintSpecificationIsEmpty",
+      "severity": "ERROR",
+      "messageTemplate": "Constraint specifications may not be empty."
+    },
+    {
+      "name": "SOFTWAREFUNCTION",
+      "queryFqn": "vql.saic.group.structuralintegrity.softwareWithoutOperation",
+      "severity": "INFO",
+      "messageTemplate": "This software element does not own any operations."
+    },
+    {
+      "name": "REALIZEDIRECTION",
+      "queryFqn": "vql.saic.group.structuralintegrity.realizationSourceShouldBePhysicalTargetShouldBeLogical",
+      "severity": "ERROR",
+      "messageTemplate": "Realization relationships between logical and physical elements must have the physical element as the source and the logical element as the target."
+    },
+    {
+      "name": "PROXYPORT",
+      "queryFqn": "vql.saic.group.interfaceintegrity.portWithoutProxyPortAndConstraintParameterStereotype",
+      "severity": "ERROR",
+      "messageTemplate": "All ports must be proxy ports."
+    },
+    {
+      "name": "PERFORMANCEFUNCTIONREFINE",
+      "queryFqn": "vql.saic.group.requirements.performanceRequirementDoesNotRefineAnyFunctionRequirement",
+      "severity": "ERROR",
+      "messageTemplate": "Performance requirements must refine one or more functional requirements."
+    },
+    {
+      "name": "EXTENDEXTPOINT",
+      "queryFqn": "vql.saic.group.usecaseintegrity.extendWithoutExtensionLocation",
+      "severity": "ERROR",
+      "messageTemplate": "Extend relationships must be assigned to at least one extension point."
+    },
+    {
+      "name": "EXTENSIONPOINTUSE",
+      "queryFqn": "vql.saic.group.usecaseintegrity.extensionPointWithoutExtension",
+      "severity": "ERROR",
+      "messageTemplate": "Extension points must be associated with at least one Extend relationship."
+    },
+    {
+      "name": "FLOWCONNECTOR",
+      "queryFqn": "vql.saic.group.flowintegrity.flowIsNotRealizedByAnyConnector",
+      "severity": "ERROR",
+      "messageTemplate": "This flow is not realized by any connectors."
+    },
+    {
+      "name": "MESSAGESIGNATURE",
+      "queryFqn": "vql.saic.group.sequencediagramintegrity.messageWithoutSignature",
+      "severity": "ERROR",
+      "messageTemplate": "All messages on sequence diagrams must have signatures assigned (signal or operation)."
+    },
+    {
+      "name": "REQUIREMENTSATISFY",
+      "queryFqn": "vql.saic.group.requirements.requirementWithoutSatisfy",
+      "severity": "INFO",
+      "messageTemplate": "This requirement does not have any satisfy relationships.  (Requirements that have blank text are exempted from this rule)."
+    },
+    {
+      "name": "OPUSAGE",
+      "queryFqn": "vql.saic.group.completeness.operationIsUnused",
+      "severity": "INFO",
+      "messageTemplate": "This operation is not used (called on an Activity or Sequence) in the model"
+    },
+    {
+      "name": "EXTERNALPARTTYPE",
+      "queryFqn": "vql.saic.group.systemcontextintegrity.ownerOfExternalPropertyIsWrong",
+      "severity": "ERROR",
+      "messageTemplate": "Part properties typed by external blocks must be owned by system context or external blocks."
+    },
+    {
+      "name": "STATEDOCUMENTATION",
+      "queryFqn": "vql.saic.group.completeness.stateWithoutDocumentation",
+      "severity": "ERROR",
+      "messageTemplate": "All states must have documentation."
+    },
+    {
+      "name": "PHYSTERMPARTS",
+      "queryFqn": "vql.saic.group.structuralintegrity.atomicPhysicalBlockOwnsPartProperty",
+      "severity": "ERROR",
+      "messageTemplate": "Physical blocks with ATOMIC = TRUE may not own part properties."
+    },
+    {
+      "name": "LOGICALPORT",
+      "queryFqn": "vql.saic.group.interfaceintegrity.logicalProxyPortWithoutLogicalInterfaceBlock",
+      "severity": "ERROR",
+      "messageTemplate": "All proxy ports owned by blocks with the <<logical>> stereotype applied must by typed by interface blocks with the <<logical>> stereotype applied."
+    },
+    {
+      "name": "TIMEEVENTWHEN",
+      "queryFqn": "vql.saic.group.statemachineintegrity.timeEventWithoutWhen",
+      "severity": "ERROR",
+      "messageTemplate": "All transitions triggered by time events must have WHEN defined."
+    },
+    {
+      "name": "OPOWNER",
+      "queryFqn": "vql.saic.group.structuralintegrity.operationWithWrongOwner",
+      "severity": "ERROR",
+      "messageTemplate": "Operations must be owned by activities or blocks with context, logical, or physical stereotypes applied."
+    },
+    {
+      "name": "CHANGEEVENTEXPRESSION",
+      "queryFqn": "vql.saic.group.statemachineintegrity.changeEventWithoutExpression",
+      "severity": "ERROR",
+      "messageTemplate": "All transitions triggered by change events must have CHANGE EXPRESSION defined."
+    },
+    {
+      "name": "RECEPTIONPROHIBIT",
+      "queryFqn": "vql.saic.group.forbiddenelements.receptionExists",
+      "severity": "ERROR",
+      "messageTemplate": "Receptions are prohibited; use operations instead."
+    },
+    {
+      "name": "STATEREACHABILITY",
+      "queryFqn": "vql.saic.group.statemachineintegrity.stateWithoutIncomingTransition",
+      "severity": "ERROR",
+      "messageTemplate": "All states must have at least one incoming transition."
+    },
+    {
+      "name": "CONNECTIONPOINTCONNECTED",
+      "queryFqn": "vql.saic.group.statemachineintegrity.connectionPointHasMoreThanOneTransitions",
+      "severity": "ERROR",
+      "messageTemplate": "Connection points must have one transition (outgoing or incoming)."
+    },
+    {
+      "name": "CONSTRAINTPARAM",
+      "queryFqn": "vql.saic.group.parametricelementintegrity.constraintBlockWithoutConstraintParam",
+      "severity": "ERROR",
+      "messageTemplate": "Constraint blocks must own one or more constraint parameters."
+    },
+    {
+      "name": "SENDSIGNALMATCH",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.sendSignalMismatchInputPinSignal",
+      "severity": "ERROR",
+      "messageTemplate": "The signal sent by a send signal action must match the signal typing its input pin."
+    },
+    {
+      "name": "SIGNALDOCUMENTATION",
+      "queryFqn": "vql.saic.group.completeness.signalWithoutDocumentation",
+      "severity": "ERROR",
+      "messageTemplate": "All signals must have documentation."
+    },
+    {
+      "name": "ACTIVITYFINAL",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.activityWithoutOneFinalNodeWithExactlyOneIncomingCF",
+      "severity": "ERROR",
+      "messageTemplate": "Activities that own diagrams must own one final node and it must have one incoming control flow."
+    },
+    {
+      "name": "REQTRACE",
+      "queryFqn": "vql.saic.group.requirements.requirementWithoutRefine",
+      "severity": "ERROR",
+      "messageTemplate": "Requirements must have at least one outgoing trace (to artifact) or refine relationship."
+    },
+    {
+      "name": "ACTIVITYINITIAL",
+      "queryFqn": "vql.saic.group.activitydiagramintegrity.activityWithoutOneInitialNodeAndOneOutgoingCF",
+      "severity": "ERROR",
+      "messageTemplate": "Activities that own diagrams must own one initial node and it must have one outgoing control flow."
+    },
+    {
+      "name": "UCTRACE",
+      "queryFqn": "vql.saic.group.usecaseintegrity.usecaseTraceWithMissingTraces",
+      "severity": "ERROR",
+      "messageTemplate": "All use cases must have an outgoing trace, extend or refine relationship or an incoming include relationship"
+    },
+    {
+      "name": "SRCCNT",
+      "queryFqn": "vql.saic.group.completeness.artifactWithoutFilenameAndHyperlinkRule",
+      "severity": "ERROR",
+      "messageTemplate": "All source content elements must have either a file name or hyperlink."
+    },
+    {
+      "name": "TRIGGERFLOWMISMATCH",
+      "queryFqn": "vql.saic.group.flowintegrity.signalTriggerIsNotConveyedOnInformationFlow",
+      "severity": "ERROR",
+      "messageTemplate": "The signal triggering this transition is not conveyed on any related item flows or flow sets."
+    },
+    {
+      "name": "CONTEXTTYPE",
+      "queryFqn": "vql.saic.group.systemcontextintegrity.partPropertyTypeIsSystemContext",
+      "severity": "ERROR",
+      "messageTemplate": "Part properties may not be typed by system context blocks; they should typically be the top-level block that owns the system context IBD."
+    },
+    {
+      "name": "ACTORASSOCIATION",
+      "queryFqn": "vql.saic.group.usecaseintegrity.assocationBetweenTwoActors",
+      "severity": "ERROR",
+      "messageTemplate": "Actors may not be associated with other actors."
+    },
+    {
+      "name": "SEQUENCELEVEL",
+      "queryFqn": "vql.saic.group.sequencediagramintegrity.interactionMixesPhysicalAndLogicalLifelines",
+      "severity": "ERROR",
+      "messageTemplate": "Sequence diagrams may not mix physical and logical lifeline types."
+    },
+    {
+      "name": "TRANSITIONTRIGGERFLOW",
+      "queryFqn": "vql.saic.group.statemachineintegrity.transitionWithSignalTriggerWithoutInformationFlow",
+      "severity": "INFO",
+      "messageTemplate": "This transition is triggered by a signal but is not associated with any item flows or flow sets."
+    },
+    {
+      "name": "LIFELINETYPE",
+      "queryFqn": "vql.saic.group.sequencediagramintegrity.lifelineIsNotTypedByBlock",
+      "severity": "ERROR",
+      "messageTemplate": "All lifelines must be typed by blocks."
+    },
+    {
+      "name": "OPAQUEACTIONBODY",
+      "queryFqn": "vql.saic.group.completeness.opaqueActionWithEmptyBody",
+      "severity": "ERROR",
+      "messageTemplate": "Opaque actions must have a BODY specified."
+    },
+    {
+      "name": "CONBLOCKDOCUMENTATION",
+      "queryFqn": "vql.saic.group.completeness.blockTypesPartPropertyButHasNoDocumentation",
+      "severity": "ERROR",
+      "messageTemplate": "All blocks that type part properties of the system context must have documentation."
+    },
+    {
+      "name": "REGIONNAME",
+      "queryFqn": "vql.saic.group.completeness.orthogonalRegionWithoutName",
+      "severity": "ERROR",
+      "messageTemplate": "Regions of orthogonal states must be named."
+    }
+  ]
+}

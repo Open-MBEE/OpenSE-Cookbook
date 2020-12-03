@@ -1,0 +1,114 @@
+package vql.saic.group.systemcontextintegrity;
+
+import sysml.PartProperty;
+import sysml.Systemcontext;
+import sysml.ValueProperty;
+import sysml.External;
+
+// --- ActRealizationRule ---
+
+@Constraint(key = {actor})
+pattern actorIsNotRealizedByPartOrValueProperty(actor: Actor){
+	neg find actorIsRealized(actor, _);
+} or {
+	neg find partPropertyOwnedByASystemContextRealizesActor(actor);
+	neg find actorIsRealizedByAClassThatIsPartPropertyOfASystemContext(actor);
+}
+
+/* private */ pattern partPropertyOwnedByASystemContextRealizesActor(actor: Actor){
+	find classRealizesActorViaPartProperty(actor, sc);
+	find Systemcontext(sc, _);
+} or {
+	find classRealizesActorViaPartProperty(actor, realizerClass);
+	find classATypesAPartPropertyOfclassB+(realizerClass, sc);
+	find Systemcontext(sc, _);
+}
+
+/* private */ pattern classRealizesActorViaPartProperty(actor: Actor, realizerClass: Class){
+	find actorIsRealized(actor, realizerProperty);
+	find isPartOrValueProperty(realizerProperty);
+	Class.ownedAttribute(realizerClass, realizerProperty);
+}
+
+/* private */  pattern actorIsRealizedByAClassThatIsPartPropertyOfASystemContext(actor: Actor){
+	find actorIsRealized(actor, realizerClass);
+	find classATypesAPartPropertyOfclassB+(realizerClass, sc);
+	find Systemcontext(sc, _);
+}
+
+/* private */ pattern actorIsRealized(actor: Actor, realizer: NamedElement){
+	Realization.supplier(realization, actor);
+	Realization.client(realization, realizer);
+}
+
+/* private */ pattern isPartOrValueProperty(property: Property){
+	find PartProperty(property, _);
+} or {
+	find ValueProperty(property, _);
+}
+
+/* private */ pattern classATypesAPartPropertyOfclassB(classA: Class, classB: Class){
+	find isPartOrValueProperty(property);
+	Class.ownedAttribute(classB, property);
+	Property.type(property, classA);
+}
+
+// --- ContextPartsRule ---
+
+@Constraint(key = {context})
+pattern systemContextWithoutPartProperty(context: Class){
+	find Systemcontext(context, _);
+	neg find hasPartProperty(context);
+}
+
+/* private */ pattern hasPartProperty(cls: Class){
+	Class.ownedAttribute(cls, partProperty);
+	find PartProperty(partProperty, _);
+}
+
+// --- ContextRealizationRule ---
+
+@Constraint(key = {property})
+pattern partPropertyDoesNotRealizeAnyActor(property: Property){
+	find PartProperty(property, _);
+	Class.ownedAttribute(owner, property);
+	find Systemcontext(owner, _);
+	
+	neg find partPropertyRealizesAnActor(property);
+}
+
+/* private */ pattern partPropertyRealizesAnActor(property: Property){
+	Realization.client(realization, property);
+	Realization.supplier(realization, target);
+	Actor(target);
+}
+
+// --- ContextTypeRule ---
+
+@Constraint(key = {property})
+pattern partPropertyTypeIsSystemContext(property: Property){
+	find PartProperty(property, _);
+	Property.type(property, type);
+	find Systemcontext(type, _);
+}
+
+// --- ExternalPartTypeRule ---
+
+@Constraint(key = {property})
+pattern ownerOfExternalPropertyIsWrong(property: Property){
+	find PartProperty(property, _);
+	Property.type(property, type);
+	find External(type, _);
+	find ownerIsNotExternalNorSystemContext(property);
+}
+
+/* private */ pattern ownerIsNotExternalNorSystemContext(property: Property){
+	Class.ownedAttribute(owner, property);
+	neg find ownerIsExternalOrSystemContext(owner);
+}
+
+/* private */ pattern ownerIsExternalOrSystemContext(owner : Class) {
+	find External(owner, _);
+} or {
+	find Systemcontext(owner, _);
+}

@@ -1,0 +1,50 @@
+package vql.saic.group.forbiddenelements;
+
+import vql.saic.helper.profile.magicdraw.AttachedFile_file;
+import sysml.Requirement;
+import sysml.extendedRequirement;
+import sysml.Allocate;
+import sysml.ReferenceProperty;
+
+// --- AllocationProhibitRule ---
+
+@Constraint(key = {allocation})
+pattern allocationExists(allocation: Abstraction){
+	find Allocate(allocation, _);
+}
+
+// --- NoAttachmentRule ---
+
+@Constraint(key = {comment})
+pattern attachmentRefersFile(comment: Comment){
+	find AttachedFile_file(comment, _);
+}
+
+// --- ReceptionProhibitRule ---
+
+@Constraint(key = {reception})
+pattern receptionExists(reception: Reception){
+	Reception(reception);
+}
+
+// --- RefproProhibitRule ---
+
+@Constraint(key = {property})
+pattern refproExists(property: Property){
+	find ReferenceProperty(property, _);
+}
+
+// --- RequirementExtendRule ---
+
+@Constraint(key = {req})
+pattern nonExtendedRequirement(req: Class){
+	find Requirement(req, _);
+	neg find extendedRequirement(req, _);	
+}
+
+// --- SwimlaneProhibitRule ---
+
+@Constraint(key = {swimlane})
+pattern swimlaneExists(swimlane: ActivityPartition){
+	ActivityPartition(swimlane);
+}

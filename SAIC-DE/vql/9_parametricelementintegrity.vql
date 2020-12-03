@@ -1,0 +1,57 @@
+package vql.saic.group.parametricelementintegrity;
+
+import vql.saic.helper.profile.magicdraw.Legend;
+
+import sysml.ConstraintBlock;
+import sysml.ConstraintParameter;
+
+// --- ConstraintParamRule ---
+
+@Constraint(key = {block})
+pattern constraintBlockWithoutConstraintParam(block: Class){
+	find ConstraintBlock(block, _);
+	neg find hasConstraintParameter(block);
+}
+
+/* private */ pattern hasConstraintParameter(block: Class){
+	Class.ownedAttribute(block, parameter);
+	find ConstraintParameter(parameter, _);
+}
+
+// --- ConstraintSpecificationRule ---
+
+@Constraint(key = {constraint})
+pattern constraintSpecificationIsEmpty(constraint: Constraint){
+	find ownerIsNotLegend(constraint);
+	find hasSpecification(constraint, specification);
+	find specificationIsEmpty(specification);
+} or {
+	find ownerIsNotLegend(constraint);
+	neg find hasSpecification(constraint, _);
+}
+
+/* private */ pattern specificationIsEmpty(specification: ValueSpecification){
+	OpaqueExpression.body(specification, "");
+} or {
+	OpaqueExpression(specification);
+	neg OpaqueExpression.body(specification, _);
+} or {
+	TimeInterval.min(specification, min);
+	TimeInterval.max(specification, max);
+	neg TimeExpression.expr(min, _);
+	neg TimeExpression.expr(max, _);
+}  or {
+	DurationInterval.min(specification, min);
+	DurationInterval.max(specification, max);
+	neg Duration.expr(min, _);
+	neg Duration.expr(max, _);
+}
+
+/* private */ pattern hasSpecification(constraint: Constraint, specification: ValueSpecification){
+	Constraint.specification(constraint, specification);
+}
+
+/* private */ pattern ownerIsNotLegend(constraint: Constraint){
+	Constraint.context(constraint, owner);
+	neg find Legend(owner, _);
+}

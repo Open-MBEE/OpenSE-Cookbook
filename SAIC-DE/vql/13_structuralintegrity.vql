@@ -1,0 +1,175 @@
+package vql.saic.group.structuralintegrity;
+
+import sysml.PartProperty;
+import sysml.InterfaceBlock;
+import sysml.Block;
+import util.compatibleClassifier;
+import vql.saic.helper.profile.saic.logical;
+import vql.saic.helper.profile.saic.physical;
+import vql.saic.helper.profile.saic.context;
+import vql.saic.helper.profile.saic.logical_atomic;
+import vql.saic.helper.profile.saic.physical_atomic;
+import vql.saic.helper.profile.saic.software;
+import vql.saic.helper.shared.typedElementWithoutType;
+
+// --- LogicalArchRule ---
+
+@Constraint(key = {property})
+pattern logicalPropertyTypedByNonLogicalBlock(property: Property){
+	find propertyHasLogicalOwner(property);
+	Property.type(property, block);
+	neg find logical(block, _);
+} or {
+	find propertyHasLogicalOwner(property);
+	find typedElementWithoutType(property);
+}
+
+private pattern propertyHasLogicalOwner(property: Property){
+	find PartProperty(property, _);
+	Class.ownedAttribute(owner, property);
+	find logical(owner, _);
+}
+
+// --- LogicalPhysicalRule ---
+
+@Constraint(key = {block})
+pattern logicalAndPhysicalBlock(block: Class){
+	find logical(block, _);
+	find physical(block, _);
+}
+
+// --- LogtermPartsRule ---
+
+@Constraint(key = {block})
+pattern atomicLogicalBlockOwnsPartProperty(block: Class){
+	find logical_atomic(block, isAtomic);
+	LiteralBoolean.value(isAtomic, true);
+	
+	Class.ownedAttribute(block, property);
+	find PartProperty(property, _);
+}
+
+// --- OpownerRule ---
+
+@Constraint(key = {operation})
+pattern operationWithWrongOwner(operation : Operation) {
+	find noActivityOwnsOperation(operation);
+	find ownerIsBlockWithoutLogicalOrPhysicalStereotype(operation);
+} or {
+	find noActivityOwnsOperation(operation);
+	find ownerIsNotClass(operation);
+}
+
+/* private */ pattern noActivityOwnsOperation(operation: Operation){
+	neg Activity.ownedOperation(_, operation);
+}
+
+/* private */ pattern ownerIsNotClass(operation: Operation){
+	DataType.ownedOperation(_, operation);
+} or {
+	Interface.ownedOperation(_, operation);
+} or {
+	Artifact.ownedOperation(_, operation);
+}
+
+/* private */ pattern
+ownerIsBlockWithoutLogicalOrPhysicalStereotype(operation : Operation) {
+	Class.ownedOperation(owner, operation);
+	neg find clsHasContextOrLogicalOrPhysicalStereotype(owner);
+}
+
+/* private */ pattern clsHasContextOrLogicalOrPhysicalStereotype(cls : Class) {
+	find context(cls, _);
+} or {
+	find logical(cls, _);
+} or {
+	find physical(cls, _);
+}
+
+// --- PartInterfaceBlockRule ---
+
+@Constraint(key = {partProperty})
+pattern partPropertyTypedByIntefaceBlock(partProperty: Property){
+	find PartProperty(partProperty, _);
+	Property.type(partProperty, block);
+	find InterfaceBlock(block, _);
+}
+
+// --- PartloopRule ---
+
+@Constraint(key = {type})
+pattern thereIsAPartPropertyLoop(type : Class) {	
+	find containsType+(_, type);
+	find isCompatibleUpstream+(type, _);
+}
+
+/* private */ pattern isCompatibleUpstream(type: Class, block: Class){
+	find compatibleClassifier(type, block);	
+	type != block;
+} or {
+	find containsType(block, type);
+	find compatibleClassifier(type, block);
+	type != block;
+}
+
+/* private */ pattern containsType(block: Class, type: Class){
+	find Block(block, _);
+	Class.ownedAttribute(block, property);
+	find PartProperty(property, _);
+	Property.type(property, type);
+}
+
+// --- ParttypeRule ---
+
+@Constraint(key = {property})
+pattern partPropertyWithoutType(property: Property){
+	find PartProperty(property, _);
+	find typedElementWithoutType(property);
+}
+
+// --- PhysicalArchRule ---
+
+@Constraint(key = {property})
+pattern physicalPropertyTypedByNonPhysicalBlock(property: Property){
+	find propertyHasPhysicalOwner(property);
+	Property.type(property, block);
+	neg find physical(block, _);
+} or {
+	find propertyHasPhysicalOwner(property);
+	find typedElementWithoutType(property);
+}
+
+/* private */ pattern propertyHasPhysicalOwner(property: Property){
+	find PartProperty(property, _);
+	Class.ownedAttribute(owner, property);
+	find physical(owner, _);
+}
+
+// --- PhystermPartsRule ---
+
+@Constraint(key = {block})
+pattern atomicPhysicalBlockOwnsPartProperty(block: Class){
+	find physical_atomic(block, isAtomic);
+	LiteralBoolean.value(isAtomic, true);
+	
+	Class.ownedAttribute(block, property);
+	find PartProperty(property, _);
+}
+
+// --- RealizedDirectionRule ---
+
+@Constraint(key = {realization})
+pattern realizationSourceShouldBePhysicalTargetShouldBeLogical(realization: Realization){
+	Realization.client(realization, source);
+	find logical(source, _);
+	Realization.supplier(realization, target);
+	find physical(target, _);
+}
+
+// --- SoftwareRule ---
+
+@Constraint(key = {elem})
+pattern softwareWithoutOperation(elem: Class){
+	find software(elem, _);
+	neg Class.ownedOperation(elem, _);
+}
