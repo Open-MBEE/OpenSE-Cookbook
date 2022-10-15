@@ -1,0 +1,7 @@
+[lfs]
+	tlstimeout = 90
+	activitytimeout = 60
+	keepalive = 90
+[lfs "transfer"]
+	maxtretries = 24
+	maxverifies = 9
