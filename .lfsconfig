@@ -1,6 +1,6 @@
 [lfs]
 	tlstimeout = 90
-	activitytimeout = 60
+	activitytimeout = 90
 	keepalive = 90
 [lfs "transfer"]
 	maxtretries = 24
