@@ -5,7 +5,7 @@ This repository contains the models and documents generated from the current ser
 You can login as openmbeeguest/guest to see the original versions.
 
    * Printed documents
-      * [OpenSE Cookbook](https://drive.google.com/drive/u/1/folders/1tEK1dyekfPCuQutaR6pC_U2zq3Z_b9L7){:target="_blank"}
+      * [OpenSE Cookbook](https://drive.google.com/drive/u/1/folders/1tEK1dyekfPCuQutaR6pC_U2zq3Z_b9L7)
 
 More information can be found at https://www.openmbee.org/products.html
 
