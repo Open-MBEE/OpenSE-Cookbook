@@ -11,4 +11,5 @@ More information can be found at https://www.openmbee.org/products.html
 
 It also constains material from the original cookbook dated 2011 which is available at http://mbse.gfse.de/documents/faq.html
 
-# Acknowledgements: Many thanks to Nerijus Jankevicius' unwavering support in building executable systems models
+# Acknowledgements
+   * Many thanks to Nerijus Jankevicius' unwavering support in building executable systems models
