@@ -7,7 +7,7 @@ You can login as openmbeeguest/guest to see the original versions.
    * Printed documents
       * [OpenSE Cookbook](https://drive.google.com/drive/u/1/folders/1tEK1dyekfPCuQutaR6pC_U2zq3Z_b9L7)
 
-More information can be found at https://www.openmbee.org/products.html
+More information can be found at [https://www.openmbee.org/products.html](https://github.com/Open-MBEE/open-mbee.github.io/wiki/Models-and-Cookbooks)
 
 It also constains material from the original cookbook dated 2011 which is available at http://mbse.gfse.de/documents/faq.html
 
